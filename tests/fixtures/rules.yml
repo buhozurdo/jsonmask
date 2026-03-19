@@ -1,0 +1,50 @@
+# Reglas de enmascarado para tests
+rules:
+  # PII - Datos personales
+  - path: "user.email"
+    strategy: "redact"
+    replace_with: "****@****.***"
+
+  - path: "user.phone"
+    strategy: "partial"
+    keep_start: 0
+    keep_end: 4
+    mask_char: "*"
+
+  - path: "user.ssn"
+    strategy: "partial"
+    keep_start: 0
+    keep_end: 4
+    mask_char: "*"
+
+  # Datos de pago
+  - path: "payment.card_number"
+    strategy: "partial"
+    keep_start: 4
+    keep_end: 4
+    mask_char: "*"
+
+  - path: "payment.cvv"
+    strategy: "redact"
+    replace_with: "***"
+
+  # Tokens y credenciales
+  - path: "auth.token"
+    strategy: "hash"
+    hash_prefix_length: 8
+
+  - path: "auth.api_key"
+    strategy: "hash"
+    hash_prefix_length: 8
+
+  - path: "auth.refresh_token"
+    strategy: "hash"
+    hash_prefix_length: 8
+
+  # Wildcards para emails y tokens genéricos
+  - path: "email"
+    strategy: "redact"
+
+  - path: "token"
+    strategy: "hash"
+    hash_prefix_length: 8

@@ -1,103 +1,108 @@
 # jsonmask
 
-Masking y redacción de datos sensibles en dicts, JSON y logs — simple, configurable y listo para integrarse en pipelines y aplicaciones Python.
+[![Build Status](https://i.ytimg.com/vi/GlqQGLz6hfs/hqdefault.jpg)
+[![Coverage](https://i.ytimg.com/vi/bNVRxb-MKGo/sddefault.jpg)
+[![PyPI version](https://upload.wikimedia.org/wikipedia/commons/thumb/0/04/PyPI-Logo-notext.svg/3840px-PyPI-Logo-notext.svg.png)
+[![Python versions](https://img.shields.io/pypi/pyversions/jsonmask.svg)](https://pypi.org/project/jsonmask/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-- pip: `pip install jsonmask`
-- Soporta: Python 3.8+
+**Masking y redacción de datos sensibles en dicts, JSON y logs — simple, configurable y listo para integrarse en pipelines y aplicaciones Python.**
+
+<p align="center">
+  <img src="https://i.ytimg.com/vi/0gLzjbfsqDM/maxresdefault.jpg" alt="jsonmask logo" width="200">
+</p>
+
+---
+
+## 🦉 Parte del Ecosistema Búho Zurdo
+
+`jsonmask` es una herramienta open-source desarrollada por [Búho Zurdo](https://github.com/raelcorrales), enfocada en la protección de datos sensibles con la misma lealtad y precisión que caracterizan a nuestro ecosistema.
 
 ---
 
 ## ¿Qué es jsonmask?
 
-`jsonmask` es una pequeña librería para detectar y enmascarar información sensible dentro de estructuras de datos Python (dict/list), JSON y mensajes de logging. Está pensada para integrarse fácilmente en aplicaciones, scripts y pipelines CI/CD donde quieras prevenir que PII, tokens o cualquier dato confidencial se filtre a logs, dumps o salidas externas.
+`jsonmask` es una librería Python para detectar y enmascarar información sensible dentro de:
+- Estructuras de datos Python (dict/list)
+- Archivos JSON y NDJSON
+- Mensajes de logging
 
-Principales objetivos:
-- Enmascarado declarativo por reglas (paths, patrones, entropía).
-- Integración plug-and-play con el sistema `logging` (handler y filter).
-- Presets para PII comunes y capacidad de extender reglas por proyecto.
-- Salida segura y configuraciones aptas para uso en CI.
+Está pensada para integrarse fácilmente en aplicaciones, scripts y pipelines CI/CD donde quieras prevenir que PII, tokens o cualquier dato confidencial se filtre a logs, dumps o salidas externas.
 
----
+### Principales objetivos
 
-## Características principales
-
-- Enmascarado por path (dot notation, corchetes y comodines simples).
-- Reglas por clave, por expresión regular o por heurística de entropía.
-- Estrategias de enmascarado: `redact`, `partial`, `hash`, `replace`, `drop`.
-- Handler/Filter para `logging` para interceptar y limpiar mensajes automáticamente.
-- CLI básica para procesar archivos JSON/NDJSON.
-- Exportable a JSON con reporte de cambios (opcional).
+- ✅ Enmascarado declarativo por reglas (paths, patrones, entropía)
+- ✅ Integración plug-and-play con el sistema `logging`
+- ✅ Presets para PII comunes
+- ✅ CLI para procesar archivos JSON/NDJSON
+- ✅ Salida segura y configuraciones aptas para uso en CI
 
 ---
 
-## Casos de uso
-
-- Evitar que tokens/credenciales aparezcan en logs de producción.
-- Preparar fixtures y dumps para compartir (anónimo).
-- Preprocesar respuestas de APIs antes de almacenarlas en S3 o enviarlas a terceros.
-- Escaneo rápido en CI para detectar valor sensible en salidas de tests.
-
----
-
-## Instalación
+## 🚀 Instalación
 
 ```bash
 pip install jsonmask
 ```
 
-O para desarrollo (cuando el repo tenga extras):
+Para desarrollo:
 
 ```bash
-git clone https://github.com/<tu-org>/jsonmask.git
+git clone https://github.com/raelcorrales/jsonmask.git
 cd jsonmask
 pip install -e ".[dev]"
 ```
 
 ---
 
-## Uso rápido — API
+## 📖 Uso Rápido
 
-Enmascarar un diccionario con una regla simple:
+### API Básica
 
 ```python
 from jsonmask import mask, Masker
 
+# Datos con información sensible
 data = {
     "user": {"name": "Ana", "email": "ana@example.com"},
     "token": "eyJhbGciOiJIUzI1..."
 }
 
+# Definir reglas de enmascarado
 rules = [
     {"path": "user.email", "strategy": "redact"},
     {"path": "token", "strategy": "hash"}
 ]
 
+# Enmascarar
 masked = mask(data, rules=rules)
 print(masked)
 # {
 #   "user": {"name": "Ana", "email": "****"},
-#   "token": "3a7bd3f..."  # hashed value
+#   "token": "3a7bd3f..."  # valor hasheado
 # }
 ```
 
-Objeto `Masker` para reutilizar compilaciones de reglas (performante):
+### Masker Reutilizable (Recomendado para producción)
 
 ```python
 from jsonmask import Masker
 
 masker = Masker.from_rules(rules)
 masked = masker.mask(data)
+
+# Reutilizar para múltiples datos
+for record in records:
+    clean_record = masker.mask(record)
 ```
 
 ---
 
-## Uso con logging
-
-Agrega `MaskingHandler` o `MaskingFilter` para limpiar mensajes y estructuras pasadas al logger.
+## 🔐 Integración con Logging
 
 ```python
 import logging
-from jsonmask import MaskingHandler, Masker
+from jsonmask import Masker, MaskingFilter
 
 rules = [
     {"path": "request.headers.authorization", "strategy": "partial"},
@@ -107,46 +112,46 @@ rules = [
 masker = Masker.from_rules(rules)
 
 handler = logging.StreamHandler()
-handler.addFilter(MaskingHandler(masker))  # también existe MaskingFilter si prefieres
+handler.addFilter(MaskingFilter(masker))
 
 logger = logging.getLogger("app")
-logger.setLevel(logging.INFO)
 logger.addHandler(handler)
 
-logger.info("request", extra={"request": {"headers": {"authorization": "Bearer abc123"}}, "user": {"email": "a@b.c"}})
-# El mensaje que sale por consola tendrá el authorization y email enmascarados.
+# Los datos sensibles serán enmascarados automáticamente
+logger.info("Request", extra={"request": {"headers": {"authorization": "Bearer abc123"}}})
 ```
 
 ---
 
-## CLI
-
-Procesar un archivo JSON o NDJSON:
+## ⌨️ CLI
 
 ```bash
-# procesamiento sencillo
+# Procesar archivo JSON
 jsonmask mask --input data.json --rules rules.yml --output masked.json
 
-# leer de stdin y escribir a stdout
-cat data.ndjson | jsonmask mask --rules rules.yml > masked.ndjson
-```
+# Procesar NDJSON desde stdin
+cat data.ndjson | jsonmask mask --rules rules.yml --ndjson > masked.ndjson
 
-Opciones típicas:
-- `--input` archivo JSON/NDJSON (si se omite, lee stdin).
-- `--rules` archivo YAML/JSON con reglas.
-- `--output` archivo de salida (si se omite, escribe stdout).
-- `--report` generar reporte JSON con listados de campos enmascarados.
+# Generar reporte de campos enmascarados
+jsonmask mask -i data.json -r rules.yml -o out.json --report report.json
+
+# Validar archivo de reglas
+jsonmask validate -r rules.yml
+
+# Listar estrategias disponibles
+jsonmask list-strategies
+```
 
 ---
 
-## Formato de reglas (YAML/JSON)
+## 📋 Formato de Reglas
 
-Ejemplo `rules.yml`:
+### Archivo YAML
 
 ```yaml
 rules:
   - path: "user.email"
-    strategy: "redact"        # redact, replace, hash, partial, drop
+    strategy: "redact"
     replace_with: "****"
 
   - path: "cards.*.number"
@@ -163,99 +168,138 @@ rules:
   - path: "token"
     strategy: "entropy"
     entropy_min: 3.5
-    replace_with: "***"
 ```
 
-Soporte de paths:
-- Notación punto: `user.email`
-- Comodín por nivel: `cards.*.number`
-- Índices: `items[0].id`
-- (Opcional) JSONPath-lite en roadmap para queries más complejas.
+### Soporte de Paths
+
+| Tipo | Ejemplo | Descripción |
+|------|---------|-------------|
+| Notación punto | `user.email` | Acceso a campos anidados |
+| Wildcard | `cards.*.number` | Cualquier clave en ese nivel |
+| Índices | `items[0].id` | Índice específico en lista |
+| Wildcard índice | `items[*].secret` | Todos los elementos de lista |
 
 ---
 
-## Estrategias de enmascarado
+## 🎯 Estrategias de Enmascarado
 
-- redact: reemplaza con `****` (o `replace_with`).
-- replace: usa `replace_with` literal.
-- hash: aplica hashing (sha256) y muestra prefijo configurable.
-- partial: conserva parte del valor (keep_start/keep_end) y rellena el resto con `mask_char`.
-- regex: aplica regex con `pattern` y `replace_with` (soporta grupos).
-- entropy: detecta valores de alta entropía y aplica `replace_with` (útil para tokens aleatorios).
-
----
-
-## Presets y reglas PII
-
-`jsonmask` incluye presets (opcional) para PII común:
-- emails
-- números de tarjeta (BIN + PAN heurístico)
-- SSN / NIF (por país, si se configura)
-- tokens JWT / bearer
-
-Puedes cargar presets y combinarlos con reglas propias.
+| Estrategia | Descripción | Opciones |
+|------------|-------------|----------|
+| `redact` | Reemplaza con placeholder | `replace_with` |
+| `replace` | Reemplaza con valor literal | `replace_with` |
+| `hash` | SHA256 con prefijo | `hash_prefix_length`, `hash_prefix` |
+| `partial` | Mantiene inicio/fin | `keep_start`, `keep_end`, `mask_char` |
+| `regex` | Aplica regex | `pattern`, `replace_with` |
+| `entropy` | Detecta alta entropía | `entropy_min`, `replace_with` |
 
 ---
 
-## Consideraciones de rendimiento
+## 📦 Presets PII
 
-- `Masker` compila reglas para ejecución repetida (evitar recompilar en bucles).
-- Recorrido iterativo (no recursivo profundo) para reducir riesgo de stack overflow.
-- Para cargas de logs muy altas, recomendamos:
-  - usar sampling (procesar sólo 1 de N mensajes),
-  - pre-filtrado por keys relevantes,
-  - ejecutar en hilo/proceso separado si es necesario.
+```python
+from jsonmask import Masker
+from jsonmask.presets import get_preset, combine_presets
 
----
+# Usar preset individual
+email_rules = get_preset("email")
 
-## Buenas prácticas
+# Combinar presets
+rules = combine_presets("email", "credit_card", "token")
+masker = Masker.from_rules(rules)
+```
 
-- Prefiere reglas por `path` en lugar de solo regex para disminuir falsos positivos.
-- Usa `Masker` reutilizable en servicios de larga vida para minimizar overhead.
-- Mantén un archivo `rules.yml` versionado en el repo y revisado por seguridad.
-- En CI, ejecuta `jsonmask` como paso antes de publicar artefactos que contengan datos.
+Presets disponibles: `email`, `credit_card`, `token`, `ssn`, `password`, `phone`, `pii` (todos)
 
 ---
 
-## Roadmap (funciones planeadas)
+## 📊 Generación de Reportes
 
-- Aprendizaje automático para reducir falsos positivos (modo “learning”).
-- Integración nativa con `structlog` y `Loguru`.
-- Plugin pre-commit y GitHub Action para escaneo de commits/PRs.
-- Exportadores para sistemas de ingestión (Fluentd/Logstash).
-- JSONPath full support y presets por regiones (SSN por país).
-- Extensiones en C para hotspots de rendimiento (opcional).
+```python
+from jsonmask import mask
+
+data = {"email": "test@example.com", "password": "secret"}
+rules = [
+    {"path": "email", "strategy": "redact"},
+    {"path": "password", "strategy": "redact"}
+]
+
+masked, report = mask(data, rules=rules, generate_report=True)
+
+print(report.to_dict())
+# {
+#   "total_fields_checked": 2,
+#   "total_fields_masked": 2,
+#   "masked_fields": [...]
+# }
+```
 
 ---
 
-## Tests y CI
+## ⚡ Rendimiento
 
-Incluye:
-- pytest (casos unitarios de reglas, estrategia y handler).
-- ejemplo de GitHub Action: run tests, build wheel, publicar versión.
-- tests de integración con fixtures NDJSON.
+- `Masker` compila reglas para ejecución repetida
+- Recorrido iterativo para evitar stack overflow
+- Recomendaciones para alta carga:
+  - Usar sampling (procesar 1 de N mensajes)
+  - Pre-filtrado por keys relevantes
+  - Ejecutar en hilo/proceso separado
 
 ---
 
-## Contribuir
+## 🛠️ Buenas Prácticas
 
-1. Fork del repo
-2. Abrir branch `feature/xxx`
+1. **Prefiere reglas por `path`** en lugar de solo regex para disminuir falsos positivos
+2. **Usa `Masker` reutilizable** en servicios de larga vida
+3. **Versiona tu archivo `rules.yml`** y revísalo con el equipo de seguridad
+4. **En CI**, ejecuta `jsonmask` antes de publicar artefactos con datos
+
+---
+
+## 🗺️ Roadmap
+
+- [ ] Modo "learning" para reducir falsos positivos
+- [ ] Integración nativa con `structlog` y `Loguru`
+- [ ] Plugin pre-commit y GitHub Action
+- [ ] Exportadores para Fluentd/Logstash
+- [ ] JSONPath full support
+- [ ] Extensiones en C para hotspots de rendimiento
+
+---
+
+## 🧪 Tests
+
+```bash
+# Ejecutar tests
+pytest
+
+# Con cobertura
+pytest --cov=src/jsonmask --cov-report=term-missing
+
+# Solo tests específicos
+pytest tests/test_masker.py -v
+```
+
+---
+
+## 🤝 Contribuir
+
+¡Las contribuciones son bienvenidas! Por favor, lee [CONTRIBUTING.md](CONTRIBUTING.md) para más detalles.
+
+1. Fork del repositorio
+2. Crear branch `feature/xxx`
 3. Añadir tests y documentación
-4. Crear PR
-
-Sigue el archivo `CONTRIBUTING.md` (cuando esté disponible) para más detalles.
+4. Crear Pull Request
 
 ---
 
-## Licencia
+## 📄 Licencia
 
-MIT — ver `LICENSE` en el repo.
+MIT — ver [LICENSE](LICENSE) para más detalles.
 
 ---
 
-## Contacto / Mantenimiento
+## 👤 Mantenedor
 
-Mantenedor: raelcorrales (GitHub: https://github.com/raelcorrales)
+**Rael Corrales** - [@raelcorrales](https://github.com/raelcorrales)
 
-Si quieres que genere la estructura inicial del repo (skeleton del paquete, tests básicos, CI y lista de issues para el MVP), lo creo ahora y te doy la lista de tareas que puedo subir como issues.
+Proyecto parte del ecosistema [Búho Zurdo](https://github.com/raelcorrales) 🦉

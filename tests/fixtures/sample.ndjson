@@ -1,0 +1,3 @@
+{"email": "user1@example.com", "name": "User One", "token": "abc123secret"}
+{"email": "user2@example.com", "name": "User Two", "token": "def456secret"}
+{"email": "user3@example.com", "name": "User Three", "token": "ghi789secret"}

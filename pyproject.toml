@@ -1,0 +1,130 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "jsonmask"
+version = "0.1.0"
+description = "Masking y redacción de datos sensibles en dicts, JSON y logs — simple, configurable y listo para integrarse en pipelines y aplicaciones Python."
+readme = "README.md"
+license = {text = "MIT"}
+authors = [
+    {name = "Rael Corrales", email = "raelcorrales@gmail.com"}
+]
+maintainers = [
+    {name = "Rael Corrales", email = "raelcorrales@gmail.com"}
+]
+keywords = [
+    "json",
+    "masking",
+    "pii",
+    "redaction",
+    "logging",
+    "security",
+    "sensitive-data",
+    "privacy"
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Security",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: System :: Logging",
+    "Typing :: Typed"
+]
+requires-python = ">=3.8"
+dependencies = [
+    "pyyaml>=6.0",
+    "click>=8.0"
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+    "black>=23.0",
+    "isort>=5.12",
+    "mypy>=1.0",
+    "ruff>=0.1",
+    "types-PyYAML"
+]
+
+[project.scripts]
+jsonmask = "jsonmask.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/raelcorrales/jsonmask"
+Documentation = "https://github.com/raelcorrales/jsonmask#readme"
+Repository = "https://github.com/raelcorrales/jsonmask.git"
+Issues = "https://github.com/raelcorrales/jsonmask/issues"
+Changelog = "https://github.com/raelcorrales/jsonmask/blob/main/CHANGELOG.md"
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/src"
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/jsonmask"]
+
+[tool.black]
+line-length = 88
+target-version = ['py38', 'py39', 'py310', 'py311', 'py312']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+    \.git
+    | \.hg
+    | \.mypy_cache
+    | \.tox
+    | \.venv
+    | _build
+    | buck-out
+    | build
+    | dist
+)/
+'''
+
+[tool.isort]
+profile = "black"
+line_length = 88
+skip_gitignore = true
+src_paths = ["src", "tests"]
+
+[tool.mypy]
+python_version = "3.8"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+strict_optional = true
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-v --cov=src/jsonmask --cov-report=term-missing --cov-report=xml"
+
+[tool.coverage.run]
+source = ["src/jsonmask"]
+branch = true
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise NotImplementedError",
+    "if TYPE_CHECKING:",
+    "if __name__ == .__main__.:"]
+
+[tool.ruff]
+line-length = 88
+target-version = "py38"
+select = ["E", "F", "W", "I", "N", "B", "C4", "UP"]
+ignore = []
