@@ -12,7 +12,7 @@ Example:
 
 """
 
-from .logging_integration import MaskingFilter, MaskingHandler
+from .logging_integration import MaskingFilter, MaskingHandler, StructuredLogMasker
 from .masker import Masker, mask
 from .presets import PII_PRESETS, get_preset, list_presets
 from .strategies import (
@@ -35,6 +35,7 @@ __all__ = [
     # Logging
     "MaskingHandler",
     "MaskingFilter",
+    "StructuredLogMasker",
     # Strategies
     "RedactStrategy",
     "ReplaceStrategy",
