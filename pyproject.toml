@@ -61,11 +61,11 @@ dev = [
 jsonmask = "jsonmask.cli:main"
 
 [project.urls]
-Homepage = "https://github.com/raelcorrales/jsonmask"
-Documentation = "https://github.com/raelcorrales/jsonmask#readme"
-Repository = "https://github.com/raelcorrales/jsonmask.git"
-Issues = "https://github.com/raelcorrales/jsonmask/issues"
-Changelog = "https://github.com/raelcorrales/jsonmask/blob/main/CHANGELOG.md"
+Homepage = "https://github.com/buhozurdo/jsonmask"
+Documentation = "https://github.com/buhozurdo/jsonmask#readme"
+Repository = "https://github.com/buhozurdo/jsonmask.git"
+Issues = "https://github.com/buhozurdo/jsonmask/issues"
+Changelog = "https://github.com/buhozurdo/jsonmask/blob/main/CHANGELOG.md"
 
 [tool.hatch.build.targets.sdist]
 include = [

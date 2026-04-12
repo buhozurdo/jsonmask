@@ -16,7 +16,7 @@
 
 ## 🦉 Parte del Ecosistema Búho Zurdo
 
-`jsonmask` es una herramienta open-source desarrollada por [Búho Zurdo](https://github.com/raelcorrales), enfocada en la protección de datos sensibles con la misma lealtad y precisión que caracterizan a nuestro ecosistema.
+`jsonmask` es una herramienta open-source desarrollada por [Búho Zurdo](https://github.com/buhozurdo), enfocada en la protección de datos sensibles con la misma lealtad y precisión que caracterizan a nuestro ecosistema.
 
 ---
 
@@ -48,7 +48,7 @@ pip install jsonmask
 Para desarrollo:
 
 ```bash
-git clone https://github.com/raelcorrales/jsonmask.git
+git clone https://github.com/buhozurdo/jsonmask.git
 cd jsonmask
 pip install -e ".[dev]"
 ```
@@ -100,6 +100,8 @@ for record in records:
 
 ## 🔐 Integración con Logging
 
+### Filtro de Masking para Logs Estándar
+
 ```python
 import logging
 from jsonmask import Masker, MaskingFilter
@@ -121,6 +123,32 @@ logger.addHandler(handler)
 logger.info("Request", extra={"request": {"headers": {"authorization": "Bearer abc123"}}})
 ```
 
+### Masking para Logs Estructurados (JSON)
+
+```python
+from jsonmask import Masker, StructuredLogMasker
+
+rules = [
+    {"path": "user.email", "strategy": "redact"},
+    {"path": "credentials.api_key", "strategy": "hash"}
+]
+
+masker = Masker.from_rules(rules)
+log_masker = StructuredLogMasker(masker)
+
+# Enmascarar entrada de log estructurado
+log_entry = {
+    "level": "info",
+    "message": "User logged in",
+    "user": {"email": "test@example.com"}
+}
+masked_entry = log_masker.mask_log_entry(log_entry)
+
+# Enmascarar string JSON directamente
+json_log = '{"user": {"email": "test@example.com"}}'
+masked_json = log_masker.mask_json_string(json_log)
+```
+
 ---
 
 ## ⌨️ CLI
@@ -140,6 +168,9 @@ jsonmask validate -r rules.yml
 
 # Listar estrategias disponibles
 jsonmask list-strategies
+
+# Generar archivo de ejemplo de reglas
+jsonmask generate-rules -o example_rules.yml
 ```
 
 ---
@@ -302,4 +333,4 @@ MIT — ver [LICENSE](LICENSE) para más detalles.
 
 **Rael Corrales** - [@raelcorrales](https://github.com/raelcorrales)
 
-Proyecto parte del ecosistema [Búho Zurdo](https://github.com/raelcorrales) 🦉
+Proyecto parte del ecosistema [Búho Zurdo](https://github.com/buhozurdo) 🦉
