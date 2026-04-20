@@ -1,16 +1,5 @@
 # jsonmask
-
-[![Build Status](https://i.ytimg.com/vi/GlqQGLz6hfs/hqdefault.jpg)
-[![Coverage](https://i.ytimg.com/vi/bNVRxb-MKGo/sddefault.jpg)
-[![PyPI version](https://upload.wikimedia.org/wikipedia/commons/thumb/0/04/PyPI-Logo-notext.svg/3840px-PyPI-Logo-notext.svg.png)
-[![Python versions](https://img.shields.io/pypi/pyversions/jsonmask.svg)](https://pypi.org/project/jsonmask/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-
 **Masking y redacción de datos sensibles en dicts, JSON y logs — simple, configurable y listo para integrarse en pipelines y aplicaciones Python.**
-
-<p align="center">
-  <img src="https://i.ytimg.com/vi/0gLzjbfsqDM/maxresdefault.jpg" alt="jsonmask logo" width="200">
-</p>
 
 ---
 
