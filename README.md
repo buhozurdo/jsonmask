@@ -320,6 +320,4 @@ MIT — ver [LICENSE](LICENSE) para más detalles.
 
 ## 👤 Mantenedor
 
-**Rael Corrales** - [@raelcorrales](https://github.com/raelcorrales)
-
 Proyecto parte del ecosistema [Búho Zurdo](https://github.com/buhozurdo) 🦉
