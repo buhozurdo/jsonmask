@@ -1,4 +1,9 @@
 # jsonmask
+
+[![Build Status](https://img.shields.io/github/actions/workflow/status/buhozurdo/jsonmask/python-publish.yml?branch=main)](https://github.com/buhozurdo/jsonmask/actions)
+[![Coverage](https://codecov.io/github/buhozurdo/jsonmask/graph/badge.svg?token=3MZZSZST5C)](https://codecov.io/github/buhozurdo/jsonmask)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 **Masking y redacción de datos sensibles en dicts, JSON y logs — simple, configurable y listo para integrarse en pipelines y aplicaciones Python.**
 
 ---
