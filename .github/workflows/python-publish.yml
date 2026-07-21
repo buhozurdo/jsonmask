@@ -6,12 +6,7 @@ on:
       - "v*"
   release:
     types: [published]
-  workflow_dispatch:
-    inputs:
-      test-pypi-only:
-        description: "Publish to Test PyPI only"
-        type: boolean
-        default: true
+
 
 permissions:
   contents: read
@@ -22,18 +17,16 @@ jobs:
     runs-on: "ubuntu-latest"
 
     steps:
-      - name: "Checkout repository"
-        uses: "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0"
+      - uses: actions/checkout@v4
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v3
         with:
-          persist-credentials: false
-
-      - name: "Setup Python"
-        uses: "actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1"
-        with:
-          python-version: "3.x"
-
-      - name: "Install dependencies"
-        run: python -m pip install build==1.4.0 hatchling
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install flake8 pytest
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
       - name: "Build dists"
         run: |
@@ -41,7 +34,7 @@ jobs:
           python -m build
 
       - name: "Upload to Release"
-        uses: "softprops/action-gh-release@9ce7a7a4f0fb32a5bac4371cdc4db0b38b0e14d7"
+        uses: softprops/action-gh-release@v3
         with:
           files: dist/*
         env:
