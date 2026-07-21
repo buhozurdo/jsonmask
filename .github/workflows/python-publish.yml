@@ -1,0 +1,48 @@
+name: Publish to PyPI
+
+on:
+  push:
+    tags:
+      - "v*"
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      test-pypi-only:
+        description: "Publish to Test PyPI only"
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: "Build dists"
+    runs-on: "ubuntu-latest"
+
+    steps:
+      - name: "Checkout repository"
+        uses: "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0"
+        with:
+          persist-credentials: false
+
+      - name: "Setup Python"
+        uses: "actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1"
+        with:
+          python-version: "3.x"
+
+      - name: "Install dependencies"
+        run: python -m pip install build==1.4.0 hatchling
+
+      - name: "Build dists"
+        run: |
+          SOURCE_DATE_EPOCH=$(git log -1 --pretty=%ct) \
+          python -m build
+
+      - name: "Upload to Release"
+        uses: "softprops/action-gh-release@9ce7a7a4f0fb32a5bac4371cdc4db0b38b0e14d7"
+        with:
+          files: dist/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
