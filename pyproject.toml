@@ -108,8 +108,7 @@ strict_optional = true
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]
-testpaths = ["tests"]
-addopts = "-v --cov=src/jsonmask --cov-report=term-missing --cov-report=xml"
+pythonpath = ["."] # O ["src"] si el paquete está dentro de src/
 
 [tool.coverage.run]
 source = ["src/jsonmask"]
