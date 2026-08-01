@@ -3,16 +3,16 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "jsonmask"
-version = "0.1.0"
+name = "buhozurdo-jsonmask"
+version = "0.1.10"
 description = "Masking y redacción de datos sensibles en dicts, JSON y logs — simple, configurable y listo para integrarse en pipelines y aplicaciones Python."
 readme = "README.md"
 license = {text = "MIT"}
 authors = [
-    {name = "Rael Corrales", email = "raelcorrales@gmail.com"}
+    { name = "Búho Zurdo", email = "dev@buhozurdo.com" },
 ]
 maintainers = [
-    {name = "Rael Corrales", email = "raelcorrales@gmail.com"}
+    { name = "raelcorrales", email = "rael@buhozurdo.com" },
 ]
 keywords = [
     "json",

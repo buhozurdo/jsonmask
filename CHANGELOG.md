@@ -7,16 +7,8 @@ y este proyecto adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.0.h
 
 ---
 
-## [Unreleased]
-
-### Added
-- Nuevas funcionalidades en desarrollo
-
-### Changed
-- Cambios a funcionalidades existentes
-
-### Fixed
-- Correcciones de bugs
+## [0.1.10] - 2026-08-01
+- Agregado el release.yml de pypi
 
 ---
 
