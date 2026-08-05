@@ -36,8 +36,10 @@ Está pensada para integrarse fácilmente en aplicaciones, scripts y pipelines C
 ## 🚀 Instalación
 
 ```bash
-pip install jsonmask
+pip install buhozurdo-jsonmask
 ```
+
+> **Nota:** en PyPI el paquete se publica como `buhozurdo-jsonmask`. El nombre `jsonmask` ya está ocupado por otro proyecto no relacionado. El módulo se importa igualmente como `jsonmask`.
 
 Para desarrollo:
 
@@ -73,7 +75,7 @@ masked = mask(data, rules=rules)
 print(masked)
 # {
 #   "user": {"name": "Ana", "email": "****"},
-#   "token": "3a7bd3f..."  # valor hasheado
+#   "token": "7e2c25d4"  # primeros 8 caracteres del hash SHA256
 # }
 ```
 
@@ -88,6 +90,15 @@ masked = masker.mask(data)
 # Reutilizar para múltiples datos
 for record in records:
     clean_record = masker.mask(record)
+```
+
+¿Prefieres mantener tus reglas en un archivo? `Masker.from_file()` las carga y compila directamente desde YAML o JSON:
+
+```python
+from jsonmask import Masker
+
+masker = Masker.from_file("rules.yml")
+masked = masker.mask(data)
 ```
 
 ---
@@ -112,8 +123,9 @@ handler.addFilter(MaskingFilter(masker))
 
 logger = logging.getLogger("app")
 logger.addHandler(handler)
+logger.setLevel(logging.INFO)  # Necesario: por defecto el nivel es WARNING y logger.info() no se emite
 
-# Los datos sensibles serán enmascarados automáticamente
+# Los datos sensibles pasados en `extra` serán enmascarados automáticamente
 logger.info("Request", extra={"request": {"headers": {"authorization": "Bearer abc123"}}})
 ```
 
@@ -163,8 +175,8 @@ jsonmask validate -r rules.yml
 # Listar estrategias disponibles
 jsonmask list-strategies
 
-# Generar archivo de ejemplo de reglas
-jsonmask generate-rules -o example_rules.yml
+# Generar archivo de ejemplo de reglas (se imprime por stdout)
+jsonmask generate-rules > example_rules.yml
 ```
 
 ---
@@ -233,7 +245,7 @@ rules = combine_presets("email", "credit_card", "token")
 masker = Masker.from_rules(rules)
 ```
 
-Presets disponibles: `email`, `credit_card`, `token`, `ssn`, `password`, `phone`, `pii` (todos)
+Presets disponibles: `email`, `credit_card`, `token`, `ssn`, `password`, `phone`, `pii` (todos) y su alias `all`. Usa `list_presets()` para ver la lista completa.
 
 ---
 
@@ -263,7 +275,8 @@ print(report.to_dict())
 ## ⚡ Rendimiento
 
 - `Masker` compila reglas para ejecución repetida
-- Recorrido iterativo para evitar stack overflow
+- Recorrido por generadores que no modifica el dato original (salvo `in_place=True`)
+- ⚠️ El recorrido actual es recursivo: estructuras anidadas muy profundas (miles de niveles) pueden lanzar `RecursionError`
 - Recomendaciones para alta carga:
   - Usar sampling (procesar 1 de N mensajes)
   - Pre-filtrado por keys relevantes
