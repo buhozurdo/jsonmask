@@ -162,25 +162,19 @@ rules:
 
         assert len(rules) == 1
 
-    def test_from_file_yaml(self):
+    def test_from_file_yaml(self, tmp_path):
         """Carga reglas desde archivo YAML."""
         yaml_content = """
 rules:
   - path: "secret"
     strategy: "redact"
 """
-        with tempfile.NamedTemporaryFile(
-            mode="w", suffix=".yaml", delete=False
-        ) as f:
-            f.write(yaml_content)
-            f.flush()
+        rules_file = tmp_path / "rules.yaml"
+        rules_file.write_text(yaml_content, encoding="utf-8")
 
-            rules = RulesParser.from_file(f.name)
+        rules = RulesParser.from_file(str(rules_file))
 
-            assert len(rules) == 1
-
-            # Cleanup
-            Path(f.name).unlink()
+        assert len(rules) == 1
 
     def test_from_file_not_found(self):
         """Error si archivo no existe."""

@@ -19,7 +19,7 @@ class TestMaskCommand:
         return CliRunner()
 
     @pytest.fixture
-    def rules_file(self):
+    def rules_file(self, tmp_path):
         """Archivo de reglas temporal."""
         content = """
 rules:
@@ -28,43 +28,31 @@ rules:
   - path: "password"
     strategy: "redact"
 """
-        with tempfile.NamedTemporaryFile(
-            mode="w", suffix=".yaml", delete=False
-        ) as f:
-            f.write(content)
-            f.flush()
-            yield f.name
-            Path(f.name).unlink()
+        file_path = tmp_path / "rules.yaml"
+        file_path.write_text(content, encoding="utf-8")
+        return str(file_path)
 
     @pytest.fixture
-    def json_file(self):
+    def json_file(self, tmp_path):
         """Archivo JSON temporal."""
         data = {"email": "test@example.com", "name": "Test User"}
-        with tempfile.NamedTemporaryFile(
-            mode="w", suffix=".json", delete=False
-        ) as f:
-            json.dump(data, f)
-            f.flush()
-            yield f.name
-            Path(f.name).unlink()
+        file_path = tmp_path / "data.json"
+        file_path.write_text(json.dumps(data), encoding="utf-8")
+        return str(file_path)
 
-    def test_mask_file(self, runner, rules_file, json_file):
+    def test_mask_file(self, runner, rules_file, json_file, tmp_path):
         """Enmascara archivo JSON."""
-        with tempfile.NamedTemporaryFile(
-            mode="w", suffix=".json", delete=False
-        ) as output_file:
-            result = runner.invoke(
-                cli,
-                ["mask", "-i", json_file, "-r", rules_file, "-o", output_file.name, "-q"]
-            )
+        output_file = tmp_path / "output.json"
+        result = runner.invoke(
+            cli,
+            ["mask", "-i", json_file, "-r", rules_file, "-o", str(output_file), "-q"]
+        )
 
-            assert result.exit_code == 0
+        assert result.exit_code == 0
 
-            output_data = json.loads(Path(output_file.name).read_text())
-            assert output_data["email"] == "****"
-            assert output_data["name"] == "Test User"
-
-            Path(output_file.name).unlink()
+        output_data = json.loads(output_file.read_text(encoding="utf-8"))
+        assert output_data["email"] == "****"
+        assert output_data["name"] == "Test User"
 
     def test_mask_stdin_stdout(self, runner, rules_file):
         """Enmascara desde stdin a stdout."""
@@ -81,24 +69,20 @@ rules:
         assert output["password"] == "****"
         assert output["user"] == "ana"
 
-    def test_mask_with_report(self, runner, rules_file, json_file):
+    def test_mask_with_report(self, runner, rules_file, json_file, tmp_path):
         """Genera reporte de enmascarado."""
-        with tempfile.NamedTemporaryFile(
-            mode="w", suffix=".json", delete=False
-        ) as report_file:
-            result = runner.invoke(
-                cli,
-                ["mask", "-i", json_file, "-r", rules_file,
-                 "--report", report_file.name, "-q"]
-            )
+        report_file = tmp_path / "report.json"
+        result = runner.invoke(
+            cli,
+            ["mask", "-i", json_file, "-r", rules_file,
+             "--report", str(report_file), "-q"]
+        )
 
-            assert result.exit_code == 0
+        assert result.exit_code == 0
 
-            report = json.loads(Path(report_file.name).read_text())
-            assert "total_fields_masked" in report
-            assert "objects" in report
-
-            Path(report_file.name).unlink()
+        report = json.loads(report_file.read_text(encoding="utf-8"))
+        assert "total_fields_masked" in report
+        assert "objects" in report
 
     def test_mask_rules_not_found(self, runner, json_file):
         """Error cuando archivo de reglas no existe."""
@@ -118,45 +102,35 @@ class TestValidateCommand:
     def runner(self):
         return CliRunner()
 
-    def test_validate_valid_rules(self, runner):
+    def test_validate_valid_rules(self, runner, tmp_path):
         """Valida archivo de reglas válido."""
         content = """
 rules:
   - path: "email"
     strategy: "redact"
 """
-        with tempfile.NamedTemporaryFile(
-            mode="w", suffix=".yaml", delete=False
-        ) as f:
-            f.write(content)
-            f.flush()
+        rules_path = tmp_path / "valid_rules.yaml"
+        rules_path.write_text(content, encoding="utf-8")
 
-            result = runner.invoke(cli, ["validate", "-r", f.name])
+        result = runner.invoke(cli, ["validate", "-r", str(rules_path)])
 
-            assert result.exit_code == 0
-            assert "válido" in result.output or "1" in result.output
+        assert result.exit_code == 0
+        assert "válido" in result.output or "1" in result.output
 
-            Path(f.name).unlink()
-
-    def test_validate_invalid_rules(self, runner):
+    def test_validate_invalid_rules(self, runner, tmp_path):
         """Detecta reglas inválidas."""
         content = """
 rules:
   - path: "email"
     strategy: "invalid_strategy"
 """
-        with tempfile.NamedTemporaryFile(
-            mode="w", suffix=".yaml", delete=False
-        ) as f:
-            f.write(content)
-            f.flush()
+        rules_path = tmp_path / "invalid_rules.yaml"
+        rules_path.write_text(content, encoding="utf-8")
 
-            result = runner.invoke(cli, ["validate", "-r", f.name])
+        result = runner.invoke(cli, ["validate", "-r", str(rules_path)])
 
-            assert result.exit_code == 1
-            assert "Error" in result.output
-
-            Path(f.name).unlink()
+        assert result.exit_code == 1
+        assert "Error" in result.output
 
 
 class TestListStrategiesCommand:
