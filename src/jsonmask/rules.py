@@ -16,7 +16,7 @@ import json
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 
-import yaml
+import yaml  # type: ignore
 
 from .path_matcher import PathMatcher
 from .strategies import STRATEGY_REGISTRY

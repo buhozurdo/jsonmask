@@ -18,7 +18,7 @@ Example:
 
 import json
 import logging
-from typing import TYPE_CHECKING, Any, Dict, Optional, Union
+from typing import TYPE_CHECKING, Any, Dict, Mapping, Optional, Union, cast
 
 if TYPE_CHECKING:
     from .masker import Masker
@@ -175,11 +175,11 @@ class MaskingHandler(logging.Filter):
         return True
 
     def _mask_args(
-        self, args: Union[tuple, Dict[str, Any]]
+        self, args: Union[tuple, Mapping[str, Any]]
     ) -> Union[tuple, Dict[str, Any]]:
         """Enmascara los argumentos del mensaje."""
-        if isinstance(args, dict):
-            return self.masker.mask(args)
+        if isinstance(args, dict) or isinstance(args, Mapping):
+            return cast(Dict[str, Any], self.masker.mask(dict(args)))
         elif isinstance(args, tuple):
             masked = []
             for arg in args:
@@ -230,7 +230,7 @@ class StructuredLogMasker:
         Returns:
             Entrada enmascarada.
         """
-        return self.masker.mask(entry)
+        return cast(Dict[str, Any], self.masker.mask(entry))
 
     def mask_json_string(self, json_str: str) -> str:
         """Enmascara un string JSON.
@@ -270,7 +270,7 @@ def structlog_processor(masker: "Masker") -> Any:
         ... )
     """
     def processor(logger: Any, method_name: str, event_dict: dict) -> dict:
-        return masker.mask(event_dict)
+        return cast(dict, masker.mask(event_dict))
     return processor
 
 

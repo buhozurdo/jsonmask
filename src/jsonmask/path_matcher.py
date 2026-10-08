@@ -147,7 +147,7 @@ def build_path(keys: List[Union[str, int]]) -> str:
     if not keys:
         return ""
 
-    parts = []
+    parts: List[str] = []
     i = 0
 
     while i < len(keys):
@@ -166,7 +166,7 @@ def build_path(keys: List[Union[str, int]]) -> str:
 
 
 def iter_paths(
-    data: Any, prefix: List[Union[str, int]] = None
+    data: Any, prefix: Optional[List[Union[str, int]]] = None
 ) -> Generator[Tuple[str, Any, List[Union[str, int]]], None, None]:
     """Itera sobre todos los paths de una estructura.
 
