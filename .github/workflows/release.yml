@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: pypi
-      url: https://pypi.org/p/${{ github.event.repository.name }}
+      url: https://pypi.org/p/buhozurdo-jsonmask
     permissions:
       id-token: write  # Obligatorio para la autenticación OIDC / Trusted Publisher
 
