@@ -21,7 +21,6 @@ Part of the [Búho Zurdo](https://github.com/buhozurdo) ecosystem 🦉
 - **Built-in Presets:** Out-of-the-box configurations for emails, credit cards, credentials, SSNs, and phone numbers.
 - **Logging Integration:** First-class filters for standard Python `logging`, `structlog`, and `Loguru`, plus structured JSON logs.
 - **Learning Mode (Dry-Run):** Validate rules and generate match reports without mutating original data.
-- **High Performance:** Core masking logic and dictionary traversals are compiled to native C extensions via `mypyc`.
 - **CLI Utility:** Native command-line tool for stream processing (JSON / NDJSON) in CI/CD pipelines.
 
 ---

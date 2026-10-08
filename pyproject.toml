@@ -1,5 +1,5 @@
 [build-system]
-requires = ["hatchling", "hatch-mypyc"]
+requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
@@ -79,14 +79,6 @@ include = [
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/jsonmask"]
-
-[tool.hatch.build.targets.wheel.hooks.mypyc]
-dependencies = ["hatch-mypyc"]
-require-runtime-dependencies = true
-include = [
-    "src/jsonmask/path_matcher.py",
-    "src/jsonmask/masker.py"
-]
 
 [tool.black]
 line-length = 88

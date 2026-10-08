@@ -7,17 +7,16 @@ y este proyecto adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.0.h
 
 ---
 
-## [0.2.0] - 2026-10-07
+## [0.2.1] - 2026-10-08
 
 ### Added
-- Integración nativa con `structlog` (`structlog_processor`) y `Loguru` (`loguru_patcher`) en `logging_integration.py`.
-- Modo "learning" (dry-run) agregado al método `mask()` para poder probar las reglas y recibir el reporte sin modificar los datos (`learning_mode=True`).
-- Extensiones en C para hotspots de rendimiento (`masker.py`, `path_matcher.py`) habilitadas al compilar con `mypyc` mediante `hatch-mypyc`.
+- Native integration with `structlog` (`structlog_processor`) and `Loguru` (`loguru_patcher`) in `logging_integration.py`.
+- "Learning" mode (dry-run) added to the `mask()` method to allow testing rules and receiving a report without modifying the data (`learning_mode=True`).
 
 ---
 
 ## [0.1.10] - 2026-08-01
-- Agregado el release.yml de pypi
+- Added PyPI release.yml
 
 ---
 
@@ -26,62 +25,56 @@ y este proyecto adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.0.h
 ### Added
 
 #### Core Functionality
-- **Librería de masking declarativo**: Sistema principal para enmascarar datos sensibles en estructuras Python, JSON y NDJSON
-- **Clase `Masker`**: Motor principal reutilizable para aplicar reglas de enmascarado compiladas
-- **Función `mask()`**: API simplificada para enmascarado puntual
-- **Sistema de reglas flexible**: Soporte para paths con punto, wildcards, índices y patrones complejos
-  - Path notation: `user.email`, `cards.*.number`, `items[0].id`, `items[*].secret`
+- **Declarative masking library**: Core system for masking sensitive data in Python, JSON, and NDJSON structures
+- **`Masker` class**: Reusable core engine for applying compiled masking rules
+- **`mask()` function**: Simplified API for ad-hoc masking
+- **Flexible rule system**: Support for dot notation paths, wildcards, indices, and complex patterns
+- Path notation: `user.email`, `cards.*.number`, `items[0].id`, `items[*].secret`
 
-#### Estrategias de Enmascarado
-- `redact`: Reemplaza con placeholder configurable
-- `replace`: Reemplaza con valor literal
-- `hash`: SHA256 con prefijo configurable
-- `partial`: Mantiene inicio/fin del valor
-- `regex`: Aplicación de patrones regex
-- `entropy`: Detección de alta entropía
+#### Masking Strategies
+- `redact`: Replaces with a configurable placeholder
+- `replace`: Replaces with a literal value
+- `hash`: SHA256 with a configurable prefix
+- `partial`: Preserves the start/end of the value
+- `regex`: Application of regex patterns
+- `entropy`: High-entropy detection
 
 #### Presets PII
-- Presets predefinidos: `email`, `credit_card`, `token`, `ssn`, `password`, `phone`, `pii`
-- Función `combine_presets()` para mezclar múltiples presets
-- Validación de reglas incluida
+- Predefined presets: `email`, `credit_card`, `token`, `ssn`, `password`, `phone`, `pii`
+- `combine_presets()` function to mix multiple presets
+- Rule validation included
 
-#### Integración con Logging
-- **`MaskingFilter`**: Filtro para el módulo `logging` estándar de Python
-- **`StructuredLogMasker`**: Enmascarado de logs estructurados (JSON)
-  - Método `mask_log_entry()` para diccionarios
-  - Método `mask_json_string()` para strings JSON
+#### Logging Integration
+- **`MaskingFilter`**: Filter for Python's standard `logging` module
+- **`StructuredLogMasker`**: Masking for structured logs (JSON)
+- `mask_log_entry()` method for dictionaries
+- `mask_json_string()` method for JSON strings
 
-#### Interfaz CLI
-- `jsonmask mask`: Procesar archivos JSON/NDJSON con reglas
-  - Opciones: `--input`, `--rules`, `--output`, `--ndjson`, `--report`
-- `jsonmask validate`: Validar archivos de reglas YAML
-- `jsonmask list-strategies`: Listar estrategias disponibles
-- `jsonmask generate-rules`: Generar template de reglas
-- Soporte para stdin/stdout
+#### CLI Interface
+- `jsonmask mask`: Process JSON/NDJSON files using rules
+- Options: `--input`, `--rules`, `--output`, `--ndjson`, `--report`
+- `jsonmask validate`: Validate YAML rule files
+- `jsonmask list-strategies`: List available strategies
+- `jsonmask generate-rules`: Generate a rules template
+- Support for stdin/stdout
 
-#### Reportes y Análisis
-- Generación de reportes de enmascarado: `generate_report=True`
-- Estadísticas de campos procesados y enmascarados
-- Listado detallado de campos afectados
+#### Reports and Analysis
+- Masking report generation: `generate_report=True`
+- Statistics on processed and masked fields
+- Detailed list of affected fields
 
-#### Documentación
-- README.md con guía de uso rápido
-- CONTRIBUTING.md con estándares de desarrollo
-- Ejemplos de código en todo el repositorio
-- Docstrings estilo Google en todas las funciones públicas
+#### Development and Testing
+- Test suite with >80% coverage
+- GitHub Actions configuration for CI/CD
+- Linting with `ruff`, formatting with `black`, import sorting with `isort`
+- Type checking with `mypy`
+- Pytest for test execution
 
-#### Desarrollo y Testing
-- Suite de tests con cobertura >80%
-- Configuración de GitHub Actions para CI/CD
-- Linting con `ruff`, formateo con `black`, ordenamiento de imports con `isort`
-- Type checking con `mypy`
-- Pytest para ejecución de tests
-
-#### Configuración del Proyecto
-- `pyproject.toml` con especificación PEP 517
-- Dependencias de desarrollo y producción claramente definidas
-- Metadatos del proyecto (autor, licencia MIT, descripción)
-- Entry point CLI: `jsonmask`
+#### Project Configuration
+- `pyproject.toml` with PEP 517 specification
+- Clearly defined development and production dependencies
+- Project metadata (author, MIT license, description)
+- CLI entry point: `jsonmask`
 
 ### Fixed
 - N/A (versión inicial)
@@ -93,26 +86,9 @@ y este proyecto adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.0.h
 - N/A (versión inicial)
 
 ### Security
-- Enmascarado automático de datos sensibles
-- Validación de reglas para evitar inyecciones
-- No almacenamiento de datos sin enmascarar en memoria innecesariamente
-
----
-
-## Estructura de Versiones Futuras
-
-### Próximas Versiones Planeadas
-
-**v0.3.0** (Expansión)
-- Plugin pre-commit
-- GitHub Action
-- JSONPath full support
-- Exportadores para Fluentd/Logstash
-
-**v1.0.0** (Estabilidad)
-- API estable y congelada
-- Documentación completa
-- Suite de tests exhaustiva
+- Automatic masking of sensitive data
+- Rule validation to prevent injection attacks
+- Avoidance of unnecessary in-memory storage of unmasked data
 
 ---
 
