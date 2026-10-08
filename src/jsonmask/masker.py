@@ -122,6 +122,7 @@ class Masker:
         data: Any,
         in_place: bool = False,
         generate_report: bool = False,
+        learning_mode: bool = False,
     ) -> Union[Any, tuple]:
         """Enmascara datos sensibles según las reglas.
 
@@ -129,23 +130,28 @@ class Masker:
             data: Estructura de datos a enmascarar (dict/list).
             in_place: Si True, modifica el dict original.
             generate_report: Si True, retorna tupla (data, report).
+            learning_mode: Si True, opera en modo aprendizaje (dry-run): 
+                           evalúa las reglas pero no altera los datos.
 
         Returns:
-            Datos enmascarados, o tupla (datos, reporte) si generate_report=True.
+            Datos enmascarados, o tupla (datos, reporte) si generate_report=True o learning_mode=True.
 
         Example:
             >>> masker = Masker.from_rules([{"path": "secret", "strategy": "redact"}])
             >>> masker.mask({"secret": "password123", "public": "hello"})
             {'secret': '****', 'public': 'hello'}
         """
+        # En modo learning, obligamos a generar un reporte
+        generate_report = generate_report or learning_mode
+        
         if not isinstance(data, (dict, list)):
             # Para valores escalares, retornar tal cual
             if generate_report:
                 return data, MaskingReport()
             return data
 
-        # Trabajar con copia si no es in_place
-        if in_place:
+        # Trabajar con copia si no es in_place y no estamos en learning_mode
+        if in_place or learning_mode:
             result = data
         else:
             result = deep_copy_structure(data)
@@ -161,7 +167,9 @@ class Masker:
             for rule in self._rules:
                 if rule.matches(path):
                     masked_value = rule.apply(value)
-                    set_value_at_path(result, keys, masked_value)
+                    
+                    if not learning_mode:
+                        set_value_at_path(result, keys, masked_value)
 
                     if report:
                         report.add_masked_field(
@@ -197,6 +205,7 @@ def mask(
     masker: Optional[Masker] = None,
     in_place: bool = False,
     generate_report: bool = False,
+    learning_mode: bool = False,
 ) -> Union[Any, tuple]:
     """Función helper para enmascarar datos.
 
@@ -206,9 +215,10 @@ def mask(
         masker: Masker precompilado (opcional).
         in_place: Si True, modifica el dict original.
         generate_report: Si True, retorna tupla (data, report).
+        learning_mode: Si True, no modifica los datos y evalúa como dry-run.
 
     Returns:
-        Datos enmascarados, o tupla (datos, reporte) si generate_report=True.
+        Datos enmascarados, o tupla (datos, reporte) si generate_report=True o learning_mode=True.
 
     Example:
         >>> data = {"email": "test@example.com", "name": "Ana"}
@@ -221,4 +231,9 @@ def mask(
             raise ValueError("Debes proporcionar 'rules' o 'masker'")
         masker = Masker.from_rules(rules)
 
-    return masker.mask(data, in_place=in_place, generate_report=generate_report)
+    return masker.mask(
+        data, 
+        in_place=in_place, 
+        generate_report=generate_report,
+        learning_mode=learning_mode
+    )

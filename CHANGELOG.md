@@ -7,6 +7,15 @@ y este proyecto adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.0.h
 
 ---
 
+## [0.2.0] - 2026-10-07
+
+### Added
+- Integración nativa con `structlog` (`structlog_processor`) y `Loguru` (`loguru_patcher`) en `logging_integration.py`.
+- Modo "learning" (dry-run) agregado al método `mask()` para poder probar las reglas y recibir el reporte sin modificar los datos (`learning_mode=True`).
+- Extensiones en C para hotspots de rendimiento (`masker.py`, `path_matcher.py`) habilitadas al compilar con `mypyc` mediante `hatch-mypyc`.
+
+---
+
 ## [0.1.10] - 2026-08-01
 - Agregado el release.yml de pypi
 
@@ -93,11 +102,6 @@ y este proyecto adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.0.h
 ## Estructura de Versiones Futuras
 
 ### Próximas Versiones Planeadas
-
-**v0.2.0** (Mejoras)
-- Integración nativa con `structlog` y `Loguru`
-- Modo "learning" para reducir falsos positivos
-- Extensiones en C para hotspots de rendimiento
 
 **v0.3.0** (Expansión)
 - Plugin pre-commit

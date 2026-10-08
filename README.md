@@ -1,47 +1,43 @@
 # jsonmask
 
-[![Build Status](https://img.shields.io/github/actions/workflow/status/buhozurdo/jsonmask/ci.yml?branch=main)](https://github.com/buhozurdo/jsonmask/actions)
+[![CI](https://github.com/buhozurdo/jsonmask/actions/workflows/ci.yml/badge.svg)](https://github.com/buhozurdo/jsonmask/actions/workflows/ci.yml)
 [![Coverage](https://codecov.io/github/buhozurdo/jsonmask/graph/badge.svg?token=3MZZSZST5C)](https://codecov.io/github/buhozurdo/jsonmask)
+[![PyPI version](https://img.shields.io/pypi/v/buhozurdo-jsonmask.svg)](https://pypi.org/project/buhozurdo-jsonmask/)
+[![Python versions](https://img.shields.io/pypi/pyversions/buhozurdo-jsonmask.svg)](https://pypi.org/project/buhozurdo-jsonmask/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-**Masking y redacción de datos sensibles en dicts, JSON y logs — simple, configurable y listo para integrarse en pipelines y aplicaciones Python.**
+Deterministic masking and PII redaction for Python dictionaries, JSON payloads, and logs.
+
+Part of the [Búho Zurdo](https://github.com/buhozurdo) ecosystem 🦉
 
 ---
 
-## 🦉 Parte del Ecosistema Búho Zurdo
+## Overview
 
-`jsonmask` es una herramienta open-source desarrollada por [Búho Zurdo](https://github.com/buhozurdo), enfocada en la protección de datos sensibles con la misma lealtad y precisión que caracterizan a nuestro ecosistema.
+`jsonmask` is an extensible security and data privacy library designed to sanitize sensitive information (PII, authentication tokens, credentials) before persisting data or emitting logs.
 
----
-
-## ¿Qué es jsonmask?
-
-`jsonmask` es una librería Python para detectar y enmascarar información sensible dentro de:
-- Estructuras de datos Python (dict/list)
-- Archivos JSON y NDJSON
-- Mensajes de logging
-
-Está pensada para integrarse fácilmente en aplicaciones, scripts y pipelines CI/CD donde quieras prevenir que PII, tokens o cualquier dato confidencial se filtre a logs, dumps o salidas externas.
-
-### Principales objetivos
-
-- ✅ Enmascarado declarativo por reglas (paths, patrones, entropía)
-- ✅ Integración plug-and-play con el sistema `logging`
-- ✅ Presets para PII comunes
-- ✅ CLI para procesar archivos JSON/NDJSON
-- ✅ Salida segura y configuraciones aptas para uso en CI
+- **Rule-based Declarative Masking:** Path-based targeting with wildcard support (`*`, `[*]`).
+- **Deterministic Strategies:** Full redaction, partial masking, HMAC/SHA-256 token hashing, entropy threshold detection, and custom callbacks.
+- **Built-in Presets:** Out-of-the-box configurations for emails, credit cards, credentials, SSNs, and phone numbers.
+- **Logging Integration:** First-class filters for standard Python `logging`, `structlog`, and `Loguru`, plus structured JSON logs.
+- **Learning Mode (Dry-Run):** Validate rules and generate match reports without mutating original data.
+- **High Performance:** Core masking logic and dictionary traversals are compiled to native C extensions via `mypyc`.
+- **CLI Utility:** Native command-line tool for stream processing (JSON / NDJSON) in CI/CD pipelines.
 
 ---
 
-## 🚀 Instalación
+## Installation
 
 ```bash
 pip install buhozurdo-jsonmask
+
+# Optional: To use third-party logging integrations (structlog, loguru)
+pip install "buhozurdo-jsonmask[loggers]"
 ```
 
-> **Nota:** en PyPI el paquete se publica como `buhozurdo-jsonmask`. El nombre `jsonmask` ya está ocupado por otro proyecto no relacionado. El módulo se importa igualmente como `jsonmask`.
+> **PyPI Note:** The package is published on PyPI under the name `buhozurdo-jsonmask`. It is imported in Python directly as `jsonmask`.
 
-Para desarrollo:
+For development:
 
 ```bash
 git clone https://github.com/buhozurdo/jsonmask.git
@@ -51,61 +47,73 @@ pip install -e ".[dev]"
 
 ---
 
-## 📖 Uso Rápido
+## Quick Start
 
-### API Básica
+### Python API
 
 ```python
 from jsonmask import mask, Masker
 
-# Datos con información sensible
 data = {
-    "user": {"name": "Ana", "email": "ana@example.com"},
-    "token": "eyJhbGciOiJIUzI1..."
+    "user": {
+        "name": "Ana",
+        "email": "ana@example.com"
+    },
+    "token": "eyJhbGciOiJIUzI1NiIsIn..."
 }
 
-# Definir reglas de enmascarado
 rules = [
     {"path": "user.email", "strategy": "redact"},
     {"path": "token", "strategy": "hash"}
 ]
 
-# Enmascarar
-masked = mask(data, rules=rules)
-print(masked)
+# Quick masking
+masked_data = mask(data, rules=rules)
+print(masked_data)
 # {
 #   "user": {"name": "Ana", "email": "****"},
-#   "token": "7e2c25d4"  # primeros 8 caracteres del hash SHA256
+#   "token": "7e2c25d4"
 # }
 ```
 
-### Masker Reutilizable (Recomendado para producción)
+### Learning Mode (Dry-Run)
+
+Safely test rules in production without altering the real data by generating a report of what *would* have been masked.
+
+```python
+from jsonmask import mask
+
+# The original data remains completely untouched
+data, report = mask(data, rules=rules, learning_mode=True)
+
+print(f"Would have masked {report.total_fields_masked} fields.")
+print("Details:", report.to_dict())
+```
+
+### Reusable Masker (Recommended for Services)
 
 ```python
 from jsonmask import Masker
 
+# Compile rules once for maximum throughput
 masker = Masker.from_rules(rules)
-masked = masker.mask(data)
 
-# Reutilizar para múltiples datos
 for record in records:
     clean_record = masker.mask(record)
 ```
 
-¿Prefieres mantener tus reglas en un archivo? `Masker.from_file()` las carga y compila directamente desde YAML o JSON:
+Rules can also be loaded directly from YAML or JSON files:
 
 ```python
-from jsonmask import Masker
-
 masker = Masker.from_file("rules.yml")
-masked = masker.mask(data)
+clean_record = masker.mask(record)
 ```
 
 ---
 
-## 🔐 Integración con Logging
+## Logging Integration
 
-### Filtro de Masking para Logs Estándar
+### Standard Library Logging Filter
 
 ```python
 import logging
@@ -123,67 +131,72 @@ handler.addFilter(MaskingFilter(masker))
 
 logger = logging.getLogger("app")
 logger.addHandler(handler)
-logger.setLevel(logging.INFO)  # Necesario: por defecto el nivel es WARNING y logger.info() no se emite
+logger.setLevel(logging.INFO)
 
-# Los datos sensibles pasados en `extra` serán enmascarados automáticamente
-logger.info("Request", extra={"request": {"headers": {"authorization": "Bearer abc123"}}})
+# Sensitive data passed in `extra` will be sanitized automatically
+logger.info("Incoming request", extra={"request": {"headers": {"authorization": "Bearer abc123def456"}}})
 ```
 
-### Masking para Logs Estructurados (JSON)
+### structlog Integration
 
 ```python
-from jsonmask import Masker, StructuredLogMasker
+import structlog
+from jsonmask import Masker
+from jsonmask.logging_integration import structlog_processor
 
-rules = [
-    {"path": "user.email", "strategy": "redact"},
-    {"path": "credentials.api_key", "strategy": "hash"}
-]
+masker = Masker.from_rules([{"path": "user.email", "strategy": "redact"}])
 
-masker = Masker.from_rules(rules)
-log_masker = StructuredLogMasker(masker)
+structlog.configure(
+    processors=[
+        structlog_processor(masker),
+        structlog.processors.JSONRenderer()
+    ]
+)
+```
 
-# Enmascarar entrada de log estructurado
-log_entry = {
-    "level": "info",
-    "message": "User logged in",
-    "user": {"email": "test@example.com"}
-}
-masked_entry = log_masker.mask_log_entry(log_entry)
+### Loguru Integration
 
-# Enmascarar string JSON directamente
-json_log = '{"user": {"email": "test@example.com"}}'
-masked_json = log_masker.mask_json_string(json_log)
+```python
+from loguru import logger
+from jsonmask import Masker
+from jsonmask.logging_integration import loguru_patcher
+
+masker = Masker.from_rules([{"path": "secret", "strategy": "redact"}])
+logger = logger.patch(loguru_patcher(masker))
+
+# Secrets within the `extra` dict are automatically intercepted and sanitized
+logger.info("Test payload", extra={"secret": "12345"})
 ```
 
 ---
 
-## ⌨️ CLI
+## Command Line Interface (CLI)
 
 ```bash
-# Procesar archivo JSON
+# Process a JSON file
 jsonmask mask --input data.json --rules rules.yml --output masked.json
 
-# Procesar NDJSON desde stdin
+# Process NDJSON streams via stdin
 cat data.ndjson | jsonmask mask --rules rules.yml --ndjson > masked.ndjson
 
-# Generar reporte de campos enmascarados
+# Generate an execution report
 jsonmask mask -i data.json -r rules.yml -o out.json --report report.json
 
-# Validar archivo de reglas
+# Validate rules file syntax
 jsonmask validate -r rules.yml
 
-# Listar estrategias disponibles
+# List available strategies
 jsonmask list-strategies
 
-# Generar archivo de ejemplo de reglas (se imprime por stdout)
-jsonmask generate-rules > example_rules.yml
+# Generate a sample rules template
+jsonmask generate-rules > rules.template.yml
 ```
 
 ---
 
-## 📋 Formato de Reglas
+## Rule Definitions
 
-### Archivo YAML
+### YAML Specification
 
 ```yaml
 rules:
@@ -207,135 +220,76 @@ rules:
     entropy_min: 3.5
 ```
 
-### Soporte de Paths
+### Path Syntax Reference
 
-| Tipo | Ejemplo | Descripción |
-|------|---------|-------------|
-| Notación punto | `user.email` | Acceso a campos anidados |
-| Wildcard | `cards.*.number` | Cualquier clave en ese nivel |
-| Índices | `items[0].id` | Índice específico en lista |
-| Wildcard índice | `items[*].secret` | Todos los elementos de lista |
-
----
-
-## 🎯 Estrategias de Enmascarado
-
-| Estrategia | Descripción | Opciones |
-|------------|-------------|----------|
-| `redact` | Reemplaza con placeholder | `replace_with` |
-| `replace` | Reemplaza con valor literal | `replace_with` |
-| `hash` | SHA256 con prefijo | `hash_prefix_length`, `hash_prefix` |
-| `partial` | Mantiene inicio/fin | `keep_start`, `keep_end`, `mask_char` |
-| `regex` | Aplica regex | `pattern`, `replace_with` |
-| `entropy` | Detecta alta entropía | `entropy_min`, `replace_with` |
+| Syntax | Example | Description |
+|---|---|---|
+| Dot notation | `user.email` | Nested dictionary access |
+| Wildcard key | `cards.*.number` | Any key at target level |
+| Index | `items[0].id` | Specific list element index |
+| Wildcard index | `items[*].secret` | All elements inside a list |
 
 ---
 
-## 📦 Presets PII
+## Available Strategies
+
+| Strategy | Description | Key Parameters |
+|---|---|---|
+| `redact` | Replaces value with placeholder | `replace_with` (default `****`) |
+| `replace` | Replaces with exact literal | `replace_with` |
+| `hash` | Truncated SHA-256 hash | `hash_prefix_length`, `hash_prefix` |
+| `partial` | Retains start/end characters | `keep_start`, `keep_end`, `mask_char` |
+| `regex` | Matches regex group and masks | `pattern`, `replace_with` |
+| `entropy` | Evaluates Shannon entropy | `entropy_min`, `replace_with` |
+
+---
+
+## Regulatory Presets
+
+Pre-configured rules are available for common privacy requirements:
 
 ```python
 from jsonmask import Masker
-from jsonmask.presets import get_preset, combine_presets
+from jsonmask.presets import combine_presets
 
-# Usar preset individual
-email_rules = get_preset("email")
-
-# Combinar presets
-rules = combine_presets("email", "credit_card", "token")
+rules = combine_presets("email", "credit_card", "token", "password")
 masker = Masker.from_rules(rules)
 ```
 
-Presets disponibles: `email`, `credit_card`, `token`, `ssn`, `password`, `phone`, `pii` (todos) y su alias `all`. Usa `list_presets()` para ver la lista completa.
+Available presets: `email`, `credit_card`, `token`, `ssn`, `password`, `phone`, `pii` (all combined).
 
 ---
 
-## 📊 Generación de Reportes
+## Known Limitations
 
-```python
-from jsonmask import mask
-
-data = {"email": "test@example.com", "password": "secret"}
-rules = [
-    {"path": "email", "strategy": "redact"},
-    {"path": "password", "strategy": "redact"}
-]
-
-masked, report = mask(data, rules=rules, generate_report=True)
-
-print(report.to_dict())
-# {
-#   "total_fields_checked": 2,
-#   "total_fields_masked": 2,
-#   "masked_fields": [...]
-# }
-```
+- **Recursive Traversal:** Traversal relies on recursive tree inspection. Extremely deep data structures (thousands of nested levels) may trigger a `RecursionError`.
+- **JSONPath Scope:** Supports dot notation, dictionary wildcards (`*`), and list indices (`[*]`). Complex filter expressions (such as `[?(@.price > 10)]`) are not supported in the standard matcher.
 
 ---
 
-## ⚡ Rendimiento
-
-- `Masker` compila reglas para ejecución repetida
-- Recorrido por generadores que no modifica el dato original (salvo `in_place=True`)
-- ⚠️ El recorrido actual es recursivo: estructuras anidadas muy profundas (miles de niveles) pueden lanzar `RecursionError`
-- Recomendaciones para alta carga:
-  - Usar sampling (procesar 1 de N mensajes)
-  - Pre-filtrado por keys relevantes
-  - Ejecutar en hilo/proceso separado
-
----
-
-## 🛠️ Buenas Prácticas
-
-1. **Prefiere reglas por `path`** en lugar de solo regex para disminuir falsos positivos
-2. **Usa `Masker` reutilizable** en servicios de larga vida
-3. **Versiona tu archivo `rules.yml`** y revísalo con el equipo de seguridad
-4. **En CI**, ejecuta `jsonmask` antes de publicar artefactos con datos
-
----
-
-## 🗺️ Roadmap
-
-- [ ] Modo "learning" para reducir falsos positivos
-- [ ] Integración nativa con `structlog` y `Loguru`
-- [ ] Plugin pre-commit y GitHub Action
-- [ ] Exportadores para Fluentd/Logstash
-- [ ] JSONPath full support
-- [ ] Extensiones en C para hotspots de rendimiento
-
----
-
-## 🧪 Tests
+## Testing
 
 ```bash
-# Ejecutar tests
+# Run test suite
 pytest
 
-# Con cobertura
+# Run tests with coverage
 pytest --cov=src/jsonmask --cov-report=term-missing
-
-# Solo tests específicos
-pytest tests/test_masker.py -v
 ```
 
 ---
 
-## 🤝 Contribuir
+## Contributing
 
-¡Las contribuciones son bienvenidas! Por favor, lee [CONTRIBUTING.md](CONTRIBUTING.md) para más detalles.
+Contributions are welcome. Please read [CONTRIBUTING.md](CONTRIBUTING.md) and adhere to [Búho Zurdo Engineering Standards](https://github.com/buhozurdo).
 
-1. Fork del repositorio
-2. Crear branch `feature/xxx`
-3. Añadir tests y documentación
-4. Crear Pull Request
-
----
-
-## 📄 Licencia
-
-MIT — ver [LICENSE](LICENSE) para más detalles.
+1. Fork repository.
+2. Create feature branch (`git checkout -b feat/privacy-feature`).
+3. Add tests and verify formatting.
+4. Open Pull Request.
 
 ---
 
-## 👤 Mantenedor
+## License
 
-Proyecto parte del ecosistema [Búho Zurdo](https://github.com/buhozurdo) 🦉
+MIT License. See [LICENSE](LICENSE) for details.

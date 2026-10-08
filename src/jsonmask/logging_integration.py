@@ -251,3 +251,42 @@ class StructuredLogMasker:
     def __call__(self, entry: Dict[str, Any]) -> Dict[str, Any]:
         """Permite usar el objeto como callable."""
         return self.mask_log_entry(entry)
+
+
+def structlog_processor(masker: "Masker") -> Any:
+    """Procesador para enmascarar logs de structlog.
+
+    Example:
+        >>> import structlog
+        >>> from jsonmask import Masker
+        >>> from jsonmask.logging_integration import structlog_processor
+        >>> 
+        >>> masker = Masker.from_rules([{"path": "user.email", "strategy": "redact"}])
+        >>> structlog.configure(
+        ...     processors=[
+        ...         structlog_processor(masker),
+        ...         structlog.processors.JSONRenderer()
+        ...     ]
+        ... )
+    """
+    def processor(logger: Any, method_name: str, event_dict: dict) -> dict:
+        return masker.mask(event_dict)
+    return processor
+
+
+def loguru_patcher(masker: "Masker") -> Any:
+    """Patcher para enmascarar extras en Loguru.
+
+    Example:
+        >>> from loguru import logger
+        >>> from jsonmask import Masker
+        >>> from jsonmask.logging_integration import loguru_patcher
+        >>> 
+        >>> masker = Masker.from_rules([{"path": "secret", "strategy": "redact"}])
+        >>> logger = logger.patch(loguru_patcher(masker))
+        >>> logger.info("Test", extra={"secret": "12345"})
+    """
+    def patcher(record: dict) -> None:
+        if "extra" in record and record["extra"]:
+            record["extra"] = masker.mask(record["extra"])
+    return patcher
