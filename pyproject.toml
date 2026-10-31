@@ -118,6 +118,7 @@ pythonpath = ["."] # O ["src"] si el paquete está dentro de src/
 [tool.coverage.run]
 source = ["src/jsonmask"]
 branch = true
+relative_files = true
 
 [tool.coverage.report]
 exclude_lines = [
