@@ -16,6 +16,7 @@ from .logging_integration import MaskingFilter, MaskingHandler, StructuredLogMas
 from .masker import Masker, mask
 from .presets import PII_PRESETS, get_preset, list_presets
 from .strategies import (
+    CustomStrategy,
     EntropyStrategy,
     HashStrategy,
     PartialStrategy,
@@ -24,7 +25,7 @@ from .strategies import (
     ReplaceStrategy,
 )
 
-__version__ = "0.1.0"
+__version__ = "0.3.0"
 __author__ = "Rael Corrales"
 __email__ = "raelcorrales@gmail.com"
 
@@ -43,6 +44,7 @@ __all__ = [
     "PartialStrategy",
     "RegexStrategy",
     "EntropyStrategy",
+    "CustomStrategy",
     # Presets
     "PII_PRESETS",
     "get_preset",

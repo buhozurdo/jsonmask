@@ -250,3 +250,14 @@ class TestValidateRules:
         errors = validate_rules(rules)
         assert len(errors) == 1
         assert "diccionario" in errors[0]
+
+    def test_rule_with_callable_strategy(self):
+        """Rule acepta una función callable como estrategia directamente."""
+        rule = Rule(path="salary", strategy=lambda val: val * 0)
+        assert rule.strategy_name == "custom"
+        assert rule.apply(1000) == 0
+
+    def test_rule_with_custom_strategy_dict(self):
+        """Rule con strategy custom y opción func."""
+        rule = Rule(path="name", strategy="custom", options={"func": lambda v: v.upper()})
+        assert rule.apply("ana") == "ANA"

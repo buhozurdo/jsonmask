@@ -2,6 +2,7 @@
 
 [![CI](https://github.com/buhozurdo/jsonmask/actions/workflows/ci.yml/badge.svg)](https://github.com/buhozurdo/jsonmask/actions/workflows/ci.yml)
 [![Coverage](https://codecov.io/github/buhozurdo/jsonmask/graph/badge.svg?token=3MZZSZST5C)](https://codecov.io/github/buhozurdo/jsonmask)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=buhozurdo_jsonmask&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=buhozurdo_jsonmask)
 [![PyPI version](https://img.shields.io/pypi/v/buhozurdo-jsonmask.svg)](https://pypi.org/project/buhozurdo-jsonmask/)
 [![Python versions](https://img.shields.io/pypi/pyversions/buhozurdo-jsonmask.svg)](https://pypi.org/project/buhozurdo-jsonmask/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -236,10 +237,23 @@ rules:
 |---|---|---|
 | `redact` | Replaces value with placeholder | `replace_with` (default `****`) |
 | `replace` | Replaces with exact literal | `replace_with` |
-| `hash` | Truncated SHA-256 hash | `hash_prefix_length`, `hash_prefix` |
+| `hash` | Truncated SHA-256 hash (with salt support) | `hash_prefix_length`, `hash_prefix`, `salt` (or env `JSONMASK_SALT`) |
 | `partial` | Retains start/end characters | `keep_start`, `keep_end`, `mask_char` |
 | `regex` | Matches regex group and masks | `pattern`, `replace_with` |
 | `entropy` | Evaluates Shannon entropy | `entropy_min`, `replace_with` |
+| `custom` | Executes custom Python function or lambda | `func` or `callback` |
+
+### Custom Callbacks & Cryptographic Salting
+
+```python
+# 1. Anonymous deterministic traceability with salt
+rules = [{"path": "user_id", "strategy": "hash", "salt": "my-secret-key"}]
+
+# 2. Custom Python callback
+rules = [{"path": "amount", "strategy": "custom", "func": lambda x: "<HIGH>" if x > 1000 else x}]
+# Or directly pass the callable:
+rules = [{"path": "amount", "strategy": lambda x: "<HIGH>" if x > 1000 else x}]
+```
 
 ---
 
@@ -287,7 +301,7 @@ If `jsonmask` doesn't perfectly fit your use case, here is how it compares to ot
 pytest
 
 # Run tests with coverage
-pytest --cov=src/jsonmask --cov-report=term-missing
+pytest --cov=src --cov-report=term-missing
 ```
 
 ---

@@ -34,29 +34,32 @@ class Rule:
     def __init__(
         self,
         path: str,
-        strategy: str,
+        strategy: Union[str, Any],
         options: Optional[Dict[str, Any]] = None,
     ):
         """Inicializa una regla.
 
         Args:
             path: Path pattern para matching.
-            strategy: Nombre de la estrategia de enmascarado.
+            strategy: Nombre de la estrategia o función/callback personalizado.
             options: Opciones adicionales para la estrategia.
         """
         self.path = path
-        self.strategy_name = strategy
         self.options = options or {}
         self.matcher = PathMatcher(path)
 
-        # Validar que la estrategia existe
-        if strategy not in STRATEGY_REGISTRY:
+        if callable(strategy):
+            self.strategy_name = "custom"
+            self.options["func"] = strategy
+            self.strategy = STRATEGY_REGISTRY["custom"]
+        elif strategy not in STRATEGY_REGISTRY:
             raise RuleValidationError(
                 f"Estrategia desconocida: '{strategy}'. "
                 f"Disponibles: {list(STRATEGY_REGISTRY.keys())}"
             )
-
-        self.strategy = STRATEGY_REGISTRY[strategy]
+        else:
+            self.strategy_name = strategy
+            self.strategy = STRATEGY_REGISTRY[strategy]
 
     def matches(self, path: str) -> bool:
         """Verifica si un path coincide con esta regla.

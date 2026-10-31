@@ -138,6 +138,24 @@ class TestMasker:
         assert "Masker" in repr(masker)
         assert "1" in repr(masker)
 
+    def test_masker_with_salt(self):
+        """Masker con regla de hash salteada."""
+        masker = Masker.from_rules([
+            {"path": "user_id", "strategy": "hash", "salt": "production_salt_key"}
+        ])
+        result = masker.mask({"user_id": "usr_999"})
+        assert result["user_id"] != "usr_999"
+        # Determinista
+        assert result["user_id"] == masker.mask({"user_id": "usr_999"})["user_id"]
+
+    def test_masker_with_custom_callback(self):
+        """Masker con función callback personalizada."""
+        masker = Masker.from_rules([
+            {"path": "price", "strategy": "custom", "func": lambda p: f"${p:,.2f} USD"}
+        ])
+        result = masker.mask({"price": 1250})
+        assert result["price"] == "$1,250.00 USD"
+
 
 class TestMaskingReport:
     """Tests para MaskingReport."""

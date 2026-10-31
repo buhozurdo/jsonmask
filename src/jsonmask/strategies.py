@@ -7,12 +7,14 @@ Este módulo contiene las diferentes estrategias de enmascarado disponibles:
 - PartialStrategy: Mantiene inicio/fin y enmascara el medio.
 - RegexStrategy: Aplica expresión regular con grupos.
 - EntropyStrategy: Detecta alta entropía y enmascara.
+- CustomStrategy: Aplica función o callback personalizado.
 """
 
 import hashlib
+import os
 import re
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Optional
+from typing import Any, Callable, Dict, Optional
 
 from .utils import calculate_entropy
 
@@ -114,11 +116,16 @@ class HashStrategy(BaseStrategy):
             options: Puede contener:
                 - hash_prefix_length: Longitud del prefijo (default: 8)
                 - hash_prefix: Prefijo a añadir antes del hash
+                - salt: Sal secreta para el hash (o variable de entorno JSONMASK_SALT)
 
         Returns:
             Hash truncado del valor.
         """
-        str_value = str(value)
+        salt = options.get("salt")
+        if salt is None:
+            salt = os.environ.get("JSONMASK_SALT", "")
+
+        str_value = f"{salt}{value}" if salt else str(value)
         hash_bytes = hashlib.sha256(str_value.encode("utf-8")).hexdigest()
 
         prefix_length = options.get("hash_prefix_length", 8)
@@ -249,6 +256,35 @@ class EntropyStrategy(BaseStrategy):
         return str_value
 
 
+class CustomStrategy(BaseStrategy):
+    """Aplica una función o callback personalizado al valor.
+
+    Example:
+        >>> strategy = CustomStrategy()
+        >>> strategy.apply(1500, {"func": lambda v: "<HIGH>" if v > 1000 else v})
+        '<HIGH>'
+    """
+
+    @property
+    def name(self) -> str:
+        return "custom"
+
+    def apply(self, value: Any, options: Dict[str, Any]) -> Any:
+        """Aplica la función personalizada.
+
+        Args:
+            value: Valor a procesar.
+            options: Debe contener 'func' o 'callback', que es un Callable[[Any], Any].
+
+        Returns:
+            Resultado de invocar la función con el valor original.
+        """
+        func = options.get("func") or options.get("callback")
+        if callable(func):
+            return func(value)
+        return value
+
+
 # Registro de estrategias disponibles
 STRATEGY_REGISTRY: Dict[str, BaseStrategy] = {
     "redact": RedactStrategy(),
@@ -257,6 +293,7 @@ STRATEGY_REGISTRY: Dict[str, BaseStrategy] = {
     "partial": PartialStrategy(),
     "regex": RegexStrategy(),
     "entropy": EntropyStrategy(),
+    "custom": CustomStrategy(),
 }
 
 

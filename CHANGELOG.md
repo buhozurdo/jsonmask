@@ -6,6 +6,19 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/en/1.0.
 y este proyecto adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
+## [0.3.0] - 2026-10-31
+
+### Added
+- **Cryptographic Salting (`HashStrategy`)**: Added `salt` parameter and fallback to `JSONMASK_SALT` environment variable for secure, deterministic pseudonymous hashing in logs and telemetry.
+- **Custom Callbacks (`CustomStrategy`)**: Added built-in `"custom"` strategy allowing direct injection of Python functions or lambdas via `func` or `callback` options.
+- **Direct Callable Rules**: `Rule` and `Masker` now accept callables directly as the strategy (e.g. `Rule("salary", lambda s: "<SECRET>")`).
+
+### Security & CI
+- Resolved all SonarCloud findings, achieving Quality Gate compliance (A Rating in Reliability, Maintainability, and Security).
+- Pinned GitHub Actions dependencies to full commit SHAs.
+- Added `uv.lock` for reproducible dependency resolution.
+- Configured relative paths in coverage tracking for seamless SonarQube Cloud ingestion.
+
 ## [0.2.2] - 2026-10-08
 
 ### Fixed

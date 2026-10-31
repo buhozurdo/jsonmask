@@ -4,6 +4,7 @@ import pytest
 
 from jsonmask.strategies import (
     STRATEGY_REGISTRY,
+    CustomStrategy,
     EntropyStrategy,
     HashStrategy,
     PartialStrategy,
@@ -85,6 +86,25 @@ class TestHashStrategy:
         result1 = strategy.apply("secret1", {})
         result2 = strategy.apply("secret2", {})
         assert result1 != result2
+
+    def test_hash_with_salt(self):
+        """Hash con salt produce un hash distinto y determinista."""
+        strategy = HashStrategy()
+        unsalted = strategy.apply("user_123", {})
+        salted1 = strategy.apply("user_123", {"salt": "secret_salt_xyz"})
+        salted2 = strategy.apply("user_123", {"salt": "secret_salt_xyz"})
+
+        assert salted1 != unsalted
+        assert salted1 == salted2
+
+    def test_hash_with_env_salt(self, monkeypatch):
+        """Hash utiliza la variable de entorno JSONMASK_SALT si no se pasa salt explícito."""
+        strategy = HashStrategy()
+        monkeypatch.setenv("JSONMASK_SALT", "env_secret_salt")
+        env_salted = strategy.apply("user_123", {})
+        explicit_salted = strategy.apply("user_123", {"salt": "env_secret_salt"})
+
+        assert env_salted == explicit_salted
 
 
 class TestPartialStrategy:
@@ -213,6 +233,27 @@ class TestEntropyStrategy:
         assert result == "[HIGH-ENTROPY]"
 
 
+class TestCustomStrategy:
+    """Tests para CustomStrategy."""
+
+    def test_custom_with_func(self):
+        """Custom strategy con opción func."""
+        strategy = CustomStrategy()
+        result = strategy.apply(1500, {"func": lambda v: "<HIGH>" if v > 1000 else str(v)})
+        assert result == "<HIGH>"
+
+    def test_custom_with_callback(self):
+        """Custom strategy con opción callback."""
+        strategy = CustomStrategy()
+        result = strategy.apply("John Doe", {"callback": lambda v: v.split()[0]})
+        assert result == "John"
+
+    def test_custom_fallback(self):
+        """Custom strategy sin callable devuelve el valor original."""
+        strategy = CustomStrategy()
+        assert strategy.apply("hello", {}) == "hello"
+
+
 class TestStrategyRegistry:
     """Tests para el registro de estrategias."""
 
@@ -229,6 +270,6 @@ class TestStrategyRegistry:
 
     def test_all_strategies_registered(self):
         """Todas las estrategias están registradas."""
-        expected = ["redact", "replace", "hash", "partial", "regex", "entropy"]
+        expected = ["redact", "replace", "hash", "partial", "regex", "entropy", "custom"]
         for name in expected:
             assert name in STRATEGY_REGISTRY
