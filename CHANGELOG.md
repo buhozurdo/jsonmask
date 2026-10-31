@@ -96,5 +96,27 @@ y este proyecto adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.0.h
 
 ---
 
-[Unreleased]: https://github.com/buhozurdo/jsonmask/compare/v0.1.0...HEAD
+## Future Versions Roadmap
+
+**v0.3.0** (Intelligence & Flexibility)
+- **Global Scanning (`global_scan`)**: Heuristic detection using regex across the entire payload (schema-agnostic) to catch PII leaked in free-text fields.
+- **Cryptographic Salting**: Expansion of the `hash` strategy to support deterministic and anonymous traceability in telemetry via a secret salt.
+- **Custom Callbacks (`custom`)**: Ability to inject Python lambdas and functions directly into the rule engine for edge cases.
+- Extended support for advanced JSONPath syntax.
+
+**v0.4.0** (Ecosystem Expansion)
+- Official `pre-commit` plugin.
+- GitHub Action for CI/CD pipelines.
+- Native exporters for integrations with Fluentd and Logstash.
+
+**v1.0.0** (Stability)
+- Stable and frozen API.
+- Comprehensive documentation.
+- Exhaustive test suite.
+
+---
+
+[Unreleased]: https://github.com/buhozurdo/jsonmask/compare/v0.2.2...HEAD
+[0.2.2]: https://github.com/buhozurdo/jsonmask/releases/tag/v0.2.2
+[0.2.1]: https://github.com/buhozurdo/jsonmask/releases/tag/v0.2.1
 [0.1.0]: https://github.com/buhozurdo/jsonmask/releases/tag/v0.1.0

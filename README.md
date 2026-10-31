@@ -259,6 +259,20 @@ Available presets: `email`, `credit_card`, `token`, `ssn`, `password`, `phone`, 
 
 ---
 
+## Alternatives and Competitors
+
+If `jsonmask` doesn't perfectly fit your use case, here is how it compares to other solutions in the Python ecosystem:
+
+| Solution | Core Approach | Best Use Case | Comparison to `jsonmask` |
+| :--- | :--- | :--- | :--- |
+| **`jsonmask`** | **Declarative Paths** | **APIs, Telemetry, CI/CD** | **(Baseline)** Lightweight, deterministic wildcard routing, built-in integrations (`structlog`, `Loguru`), and dry-run mode. |
+| **Microsoft Presidio** | NLP & Pattern Matching | Free-text, documents, images | **Pros:** Can detect PII in unstructured text without knowing the schema.<br>**Cons:** Extremely heavy to deploy, non-deterministic, overkill for structured JSON. |
+| **sanitary** | Key iteration / Regex | Basic structlog telemetry | **Pros:** Includes cryptographic hashing natively.<br>**Cons:** Lacks declarative path syntax (dot notation/wildcards) for deep nested structures. |
+| **the-mask** | Simple JSON iteration | Minimalist environments | **Pros:** Very basic and simple.<br>**Cons:** Lacks native logging integrations, no dry-run, no advanced wildcard routing. |
+| **Native `logging.Filter`** | Custom Python Code | Zero-dependency environments | **Pros:** Total control over the implementation.<br>**Cons:** High maintenance burden, reinvents recursive traversal and masking logic. |
+
+---
+
 ## Known Limitations
 
 - **Recursive Traversal:** Traversal relies on recursive tree inspection. Extremely deep data structures (thousands of nested levels) may trigger a `RecursionError`.

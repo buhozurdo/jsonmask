@@ -221,16 +221,9 @@ def set_value_at_path(
 
     current = data
     for key in keys[:-1]:
-        if isinstance(key, int):
-            current = current[key]
-        else:
-            current = current[key]
+        current = current[key]
 
-    final_key = keys[-1]
-    if isinstance(final_key, int):
-        current[final_key] = value
-    else:
-        current[final_key] = value
+    current[keys[-1]] = value
 
 
 def get_value_at_path(
@@ -252,10 +245,7 @@ def get_value_at_path(
     current = data
     try:
         for key in keys:
-            if isinstance(key, int):
-                current = current[key]
-            else:
-                current = current[key]
+            current = current[key]
         return True, current
     except (KeyError, IndexError, TypeError):
         return False, None

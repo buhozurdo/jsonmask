@@ -46,7 +46,7 @@ SAMPLE_EVENTS = [
         "payment": {
             "card_number": "4111111111111111",
             "cvv": "123",
-            "token": "tok_1Ey0Cx2eZvKYlo2C9tFkGhAb",
+            "token": "sample_dummy_token_example",  # NOSONAR
         },
         "items": [{"sku": "SKU-1", "qty": 2}],
     },

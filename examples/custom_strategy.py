@@ -15,7 +15,7 @@ Demuestra:
     - La funcion list-strategies de la CLI tambien la mostrara
 """
 
-import random
+import secrets
 import sys
 from pathlib import Path
 
@@ -62,7 +62,7 @@ class NameMaskingStrategy(BaseStrategy):
         keep_initial = options.get("keep_initial", True)
 
         initial = first_name[0] if keep_initial else "X"
-        fake_surname = random.choice(_SURNAMES)
+        fake_surname = secrets.choice(_SURNAMES)
 
         return f"{initial}. {fake_surname}"
 
