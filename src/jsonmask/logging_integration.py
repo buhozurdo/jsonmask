@@ -192,7 +192,7 @@ class MaskingHandler(logging.Filter):
 
     def _mask_record_dict(self, record: logging.LogRecord) -> None:
         """Enmascara el __dict__ del registro."""
-        for key, value in list(record.__dict__.items()):
+        for key, value in record.__dict__.items():
             if isinstance(value, (dict, list)):
                 try:
                     masked = self.masker.mask(value)

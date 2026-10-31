@@ -162,24 +162,32 @@ class Masker:
         for path, value, keys in iter_paths(result):
             if report:
                 report.total_fields_checked += 1
-
-            # Buscar regla que coincida
-            for rule in self._rules:
-                if rule.matches(path):
-                    masked_value = rule.apply(value)
-                    
-                    if not learning_mode:
-                        set_value_at_path(result, keys, masked_value)
-
-                    if report:
-                        report.add_masked_field(
-                            path, value, masked_value, rule.path
-                        )
-                    break  # Solo aplicar primera regla que coincida
+            self._apply_rules_to_path(path, value, keys, result, report, learning_mode)
 
         if generate_report:
             return result, report
         return result
+
+    def _apply_rules_to_path(
+        self,
+        path: str,
+        value: Any,
+        keys: List[Union[str, int]],
+        result: Any,
+        report: Optional[MaskingReport],
+        learning_mode: bool,
+    ) -> None:
+        """Busca y aplica la primera regla que coincida con el path."""
+        for rule in self._rules:
+            if rule.matches(path):
+                masked_value = rule.apply(value)
+                if not learning_mode:
+                    set_value_at_path(result, keys, masked_value)
+                if report:
+                    report.add_masked_field(
+                        path, value, masked_value, rule.path
+                    )
+                break
 
     def add_rule(self, rule: Union[Dict[str, Any], Rule]) -> None:
         """Añade una regla al Masker.

@@ -8,7 +8,7 @@ Uso:
 import json
 import sys
 from pathlib import Path
-from typing import Optional, TextIO
+from typing import Optional, TextIO, Tuple
 
 import click
 import yaml
@@ -67,6 +67,45 @@ def write_output(
     finally:
         if output_file:
             out.close()
+
+
+def _process_data(
+    data: list,
+    masker: Masker,
+    generate_report: bool,
+) -> Tuple[list, list]:
+    """Procesa los elementos de datos aplicando las reglas de enmascaramiento."""
+    results = []
+    all_reports = []
+    for item in data:
+        if generate_report:
+            masked, report = masker.mask(item, generate_report=True)
+            results.append(masked)
+            all_reports.append(report.to_dict())
+        else:
+            results.append(masker.mask(item))
+    return results, all_reports
+
+
+def _save_report(
+    report_file: str,
+    all_reports: list,
+    quiet: bool,
+) -> None:
+    """Genera y guarda el reporte consolidado de enmascaramiento."""
+    combined_report = {
+        "total_objects": len(all_reports),
+        "total_fields_masked": sum(
+            r["total_fields_masked"] for r in all_reports
+        ),
+        "objects": all_reports,
+    }
+    Path(report_file).write_text(
+        json.dumps(combined_report, indent=2, ensure_ascii=False),
+        encoding="utf-8",
+    )
+    if not quiet:
+        click.echo(f"Reporte guardado en {report_file}", err=True)
 
 
 @click.group()
@@ -163,36 +202,14 @@ def mask(
 
         # Procesar
         generate_report = report_file is not None
-        results = []
-        all_reports = []
-
-        for item in data:
-            if generate_report:
-                masked, report = masker.mask(item, generate_report=True)
-                results.append(masked)
-                all_reports.append(report.to_dict())
-            else:
-                masked = masker.mask(item)
-                results.append(masked)
+        results, all_reports = _process_data(data, masker, generate_report)
 
         # Escribir salida
         write_output(results, output_file, ndjson, indent)
 
         # Escribir reporte si se solicitó
         if report_file and all_reports:
-            combined_report = {
-                "total_objects": len(all_reports),
-                "total_fields_masked": sum(
-                    r["total_fields_masked"] for r in all_reports
-                ),
-                "objects": all_reports,
-            }
-            Path(report_file).write_text(
-                json.dumps(combined_report, indent=2, ensure_ascii=False),
-                encoding="utf-8"
-            )
-            if not quiet:
-                click.echo(f"Reporte guardado en {report_file}", err=True)
+            _save_report(report_file, all_reports, quiet)
 
         if not quiet:
             total_masked = sum(

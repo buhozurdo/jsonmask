@@ -14,27 +14,32 @@ Example:
 
 from typing import Any, Dict, List, Optional
 
+MASKED_EMAIL_PLACEHOLDER = "****@****.***"
+BEARER_AUTH_PATTERN = r"Bearer\s+(.+)"
+BEARER_AUTH_REPLACEMENT = "Bearer ****"
+MASKED_PASSWORD_PLACEHOLDER = "********"
+
 # Preset para emails
 EMAIL_PRESET: List[Dict[str, Any]] = [
     {
         "path": "email",
         "strategy": "redact",
-        "replace_with": "****@****.***",
+        "replace_with": MASKED_EMAIL_PLACEHOLDER,
     },
     {
         "path": "*.email",
         "strategy": "redact",
-        "replace_with": "****@****.***",
+        "replace_with": MASKED_EMAIL_PLACEHOLDER,
     },
     {
         "path": "user.email",
         "strategy": "redact",
-        "replace_with": "****@****.***",
+        "replace_with": MASKED_EMAIL_PLACEHOLDER,
     },
     {
         "path": "customer.email",
         "strategy": "redact",
-        "replace_with": "****@****.***",
+        "replace_with": MASKED_EMAIL_PLACEHOLDER,
     },
 ]
 
@@ -110,20 +115,20 @@ TOKEN_PRESET: List[Dict[str, Any]] = [
     {
         "path": "headers.authorization",
         "strategy": "regex",
-        "pattern": r"Bearer\s+(.+)",
-        "replace_with": "Bearer ****",
+        "pattern": BEARER_AUTH_PATTERN,
+        "replace_with": BEARER_AUTH_REPLACEMENT,
     },
     {
         "path": "headers.Authorization",
         "strategy": "regex",
-        "pattern": r"Bearer\s+(.+)",
-        "replace_with": "Bearer ****",
+        "pattern": BEARER_AUTH_PATTERN,
+        "replace_with": BEARER_AUTH_REPLACEMENT,
     },
     {
         "path": "*.authorization",
         "strategy": "regex",
-        "pattern": r"Bearer\s+(.+)",
-        "replace_with": "Bearer ****",
+        "pattern": BEARER_AUTH_PATTERN,
+        "replace_with": BEARER_AUTH_REPLACEMENT,
     },
 ]
 
@@ -157,22 +162,22 @@ PASSWORD_PRESET: List[Dict[str, Any]] = [
     {
         "path": "password",
         "strategy": "redact",
-        "replace_with": "********",
+        "replace_with": MASKED_PASSWORD_PLACEHOLDER,
     },
     {
         "path": "*.password",
         "strategy": "redact",
-        "replace_with": "********",
+        "replace_with": MASKED_PASSWORD_PLACEHOLDER,
     },
     {
         "path": "secret",
         "strategy": "redact",
-        "replace_with": "********",
+        "replace_with": MASKED_PASSWORD_PLACEHOLDER,
     },
     {
         "path": "*.secret",
         "strategy": "redact",
-        "replace_with": "********",
+        "replace_with": MASKED_PASSWORD_PLACEHOLDER,
     },
 ]
 
