@@ -6,6 +6,7 @@ Este módulo permite hacer matching de paths en estructuras anidadas:
 - Índices: items[0].id
 """
 
+from functools import lru_cache
 import re
 from typing import Any, Dict, Generator, List, Optional, Tuple, Union
 
@@ -24,6 +25,8 @@ class PathMatcher:
         """
         self.pattern = pattern
         self.segments = self._parse_pattern(pattern)
+        self._pattern_expanded: Tuple[str, ...] = tuple(self._expand_segments(self.segments))
+        self._match_cache: Dict[str, bool] = {}
         self._compiled = True
 
     def _parse_pattern(self, pattern: str) -> List[Tuple[str, Optional[str]]]:
@@ -90,31 +93,31 @@ class PathMatcher:
         Returns:
             True si coincide con el patrón.
         """
-        concrete_segments = self._parse_pattern(path)
+        cached = self._match_cache.get(path)
+        if cached is not None:
+            return cached
 
-        # Expandir segmentos con índices para comparación
-        # users[0].email -> [users, [0], email]
-        # users.*.email -> [users, *, email]
-        pattern_expanded = self._expand_segments(self.segments)
-        concrete_expanded = self._expand_segments(concrete_segments)
+        concrete_expanded = _parse_and_expand_concrete_path(path)
+        if len(self._pattern_expanded) != len(concrete_expanded):
+            res = False
+        else:
+            res = True
+            for p_seg, c_seg in zip(self._pattern_expanded, concrete_expanded):
+                if p_seg == "*":
+                    continue
+                if p_seg == "[*]":
+                    if not (c_seg.startswith("[") and c_seg.endswith("]")):
+                        res = False
+                        break
+                    continue
+                if p_seg != c_seg:
+                    res = False
+                    break
 
-        if len(pattern_expanded) != len(concrete_expanded):
-            return False
+        if len(self._match_cache) < 2048:
+            self._match_cache[path] = res
 
-        for p_seg, c_seg in zip(pattern_expanded, concrete_expanded):
-            # Si el patrón es wildcard, acepta cualquier cosa
-            if p_seg == "*":
-                continue
-            # Si el patrón es wildcard de índice, acepta cualquier índice
-            if p_seg == "[*]":
-                if not (c_seg.startswith("[") and c_seg.endswith("]")):
-                    return False
-                continue
-            # Comparar directamente
-            if p_seg != c_seg:
-                return False
-
-        return True
+        return res
 
     def _expand_segments(
         self, segments: List[Tuple[str, Optional[str]]]
@@ -129,6 +132,44 @@ class PathMatcher:
 
     def __repr__(self) -> str:
         return f"PathMatcher('{self.pattern}')"
+
+
+@lru_cache(maxsize=4096)
+def _parse_and_expand_concrete_path(path: str) -> Tuple[str, ...]:
+    """Parsea y expande un path concreto con memoización de AST."""
+    parts = []
+    current = ""
+    bracket_depth = 0
+
+    for char in path:
+        if char == "[":
+            bracket_depth += 1
+            current += char
+        elif char == "]":
+            bracket_depth -= 1
+            current += char
+        elif char == "." and bracket_depth == 0:
+            if current:
+                parts.append(current)
+            current = ""
+        else:
+            current += char
+
+    if current:
+        parts.append(current)
+
+    expanded = []
+    for part in parts:
+        match = PathMatcher.INDEX_PATTERN.match(part)
+        if match:
+            key, index = match.groups()
+            expanded.append(key)
+            if index is not None:
+                expanded.append(f"[{index}]")
+        else:
+            expanded.append(part)
+
+    return tuple(expanded)
 
 
 def build_path(keys: List[Union[str, int]]) -> str:

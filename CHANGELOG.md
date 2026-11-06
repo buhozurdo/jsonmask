@@ -6,6 +6,14 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/en/1.0.
 y este proyecto adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
+## [0.3.1] - 2026-11-06
+
+### Performance
+- **Single-Pass Tree Traversal**: Replaced redundant `copy.deepcopy()` and duplicate tree traversals with a unified, single-pass recursive copy traversal (`_traverse_copy`), yielding ~5x–11x speedups and dramatically lower memory allocation.
+- **AST & Path Matcher Memoization**: Added LRU cache for path syntax parsing and regex expansion in `PathMatcher._parse_and_expand_concrete_path`, plus instance-level match caching, accelerating exclusion and rule matching by up to ~52x.
+- **Salt Pre-compilation**: Pre-compiled base cryptographic hasher in `HashStrategy` via `hasher.copy()`, accelerating salted hashing throughput by >2.1x.
+
+---
 ## [0.3.0] - 2026-10-31
 
 ### Added
@@ -109,27 +117,8 @@ y este proyecto adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.0.h
 
 ---
 
-## Future Versions Roadmap
-
-**v0.3.0** (Intelligence & Flexibility)
-- **Global Scanning (`global_scan`)**: Heuristic detection using regex across the entire payload (schema-agnostic) to catch PII leaked in free-text fields.
-- **Cryptographic Salting**: Expansion of the `hash` strategy to support deterministic and anonymous traceability in telemetry via a secret salt.
-- **Custom Callbacks (`custom`)**: Ability to inject Python lambdas and functions directly into the rule engine for edge cases.
-- Extended support for advanced JSONPath syntax.
-
-**v0.4.0** (Ecosystem Expansion)
-- Official `pre-commit` plugin.
-- GitHub Action for CI/CD pipelines.
-- Native exporters for integrations with Fluentd and Logstash.
-
-**v1.0.0** (Stability)
-- Stable and frozen API.
-- Comprehensive documentation.
-- Exhaustive test suite.
-
----
-
-[Unreleased]: https://github.com/buhozurdo/jsonmask/compare/v0.2.2...HEAD
+[Unreleased]: https://github.com/buhozurdo/jsonmask/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/buhozurdo/jsonmask/releases/tag/v0.3.0
 [0.2.2]: https://github.com/buhozurdo/jsonmask/releases/tag/v0.2.2
 [0.2.1]: https://github.com/buhozurdo/jsonmask/releases/tag/v0.2.1
 [0.1.0]: https://github.com/buhozurdo/jsonmask/releases/tag/v0.1.0

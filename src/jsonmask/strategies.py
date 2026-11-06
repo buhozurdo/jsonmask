@@ -104,6 +104,9 @@ class HashStrategy(BaseStrategy):
         8
     """
 
+    def __init__(self) -> None:
+        self._salt_cache: Dict[str, Any] = {}
+
     @property
     def name(self) -> str:
         return "hash"
@@ -125,8 +128,18 @@ class HashStrategy(BaseStrategy):
         if salt is None:
             salt = os.environ.get("JSONMASK_SALT", "")
 
-        str_value = f"{salt}{value}" if salt else str(value)
-        hash_bytes = hashlib.sha256(str_value.encode("utf-8")).hexdigest()
+        val_bytes = str(value).encode("utf-8")
+        if salt:
+            base_hasher = self._salt_cache.get(salt)
+            if base_hasher is None:
+                base_hasher = hashlib.sha256(salt.encode("utf-8"))
+                if len(self._salt_cache) < 256:
+                    self._salt_cache[salt] = base_hasher
+            hasher = base_hasher.copy()
+            hasher.update(val_bytes)
+            hash_bytes = hasher.hexdigest()
+        else:
+            hash_bytes = hashlib.sha256(val_bytes).hexdigest()
 
         prefix_length = options.get("hash_prefix_length", 8)
         prefix = options.get("hash_prefix", "")
