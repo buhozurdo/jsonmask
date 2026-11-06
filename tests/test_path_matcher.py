@@ -205,3 +205,27 @@ class TestGetValueAtPath:
         found, value = get_value_at_path(data, ["items", 99])
 
         assert found is False
+
+    def test_path_matcher_cache_and_wildcard_mismatch(self):
+        """Prueba aciertos de caché, límite de caché y branch de índice no coincidente."""
+        matcher = PathMatcher("items[*].id")
+        # Primer match (cache miss)
+        assert matcher.matches("items[0].id") is True
+        # Segundo match (cache hit)
+        assert matcher.matches("items[0].id") is True
+        # Patrón espera [*], pero el concreto no tiene corchetes (ej: items.foo)
+        assert matcher.matches("items.foo") is False
+
+        # Llenar la caché hasta el límite para verificar la condición len(cache) < 2048
+        for i in range(2050):
+            matcher._match_cache[f"key_{i}"] = True
+        assert matcher.matches("unique_new_key") is False
+
+    def test_build_path_and_set_value_edge_cases(self):
+        """Casos de borde para build_path y set_value_at_path."""
+        assert build_path([]) == ""
+        assert build_path([0, "user"]) == "[0].user"
+
+        d = {"a": 1}
+        set_value_at_path(d, [], "val")
+        assert d == {"a": 1}

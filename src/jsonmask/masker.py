@@ -13,9 +13,7 @@ Example:
 
 from typing import Any, Dict, List, Optional, Union
 
-from .path_matcher import build_path, iter_paths, set_value_at_path
 from .rules import Rule, RulesParser, compile_rules
-from .utils import deep_copy_structure
 
 
 class MaskingReport:
@@ -253,27 +251,6 @@ class Masker:
                     self._traverse_learning(item, cur_path, report)
                 else:
                     self._mask_leaf(cur_path, item, report)
-
-    def _apply_rules_to_path(
-        self,
-        path: str,
-        value: Any,
-        keys: List[Union[str, int]],
-        result: Any,
-        report: Optional[MaskingReport],
-        learning_mode: bool,
-    ) -> None:
-        """Busca y aplica la primera regla que coincida con el path (compatibilidad)."""
-        for rule in self._rules:
-            if rule.matches(path):
-                masked_value = rule.apply(value)
-                if not learning_mode:
-                    set_value_at_path(result, keys, masked_value)
-                if report:
-                    report.add_masked_field(
-                        path, value, masked_value, rule.path
-                    )
-                break
 
     def add_rule(self, rule: Union[Dict[str, Any], Rule]) -> None:
         """Añade una regla al Masker.

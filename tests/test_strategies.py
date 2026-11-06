@@ -106,6 +106,23 @@ class TestHashStrategy:
 
         assert env_salted == explicit_salted
 
+    def test_hash_salt_cache_and_limit(self):
+        """Verifica acierto de caché de salt y comportamiento con límite de 256 salts."""
+        strategy = HashStrategy()
+        # Primer hash con salt (cache miss)
+        res1 = strategy.apply("hello", {"salt": "fixed_salt"})
+        assert "fixed_salt" in strategy._salt_cache
+        # Segundo hash con mismo salt (cache hit)
+        res2 = strategy.apply("hello", {"salt": "fixed_salt"})
+        assert res1 == res2
+
+        # Llenar la caché hasta el límite
+        for i in range(260):
+            strategy._salt_cache[f"s_{i}"] = "dummy"
+        # Nuevo salt cuando len >= 256 no debe explotar ni añadir a la caché
+        strategy.apply("hello", {"salt": "overflow_salt"})
+        assert "overflow_salt" not in strategy._salt_cache
+
 
 class TestPartialStrategy:
     """Tests para PartialStrategy."""

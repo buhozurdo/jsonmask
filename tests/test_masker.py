@@ -156,6 +156,70 @@ class TestMasker:
         result = masker.mask({"price": 1250})
         assert result["price"] == "$1,250.00 USD"
 
+    def test_mask_in_place_list_and_nested(self):
+        """Modificación in-place sobre listas y estructuras anidadas."""
+        data = [
+            {"email": "one@example.com"},
+            {"nested": {"email": "two@example.com"}},
+            "primitive_val",
+        ]
+        rules = [{"path": "[*].email", "strategy": "redact"}, {"path": "[*].nested.email", "strategy": "redact"}]
+        res, report = mask(data, rules=rules, in_place=True, generate_report=True)
+        assert res is data
+        assert data[0]["email"] == "****"
+        assert data[1]["nested"]["email"] == "****"
+        assert data[2] == "primitive_val"
+        assert report.total_fields_masked == 2
+
+    def test_mask_learning_mode_dict_and_list(self):
+        """Modo learning (dry-run) no altera datos pero genera reporte completo."""
+        data = {
+            "users": [
+                {"email": "a@b.com", "active": True},
+                {"email": "c@d.com", "sub": ["item"]},
+            ],
+            "admin": {"token": "secret123"},
+        }
+        rules = [
+            {"path": "users[*].email", "strategy": "redact"},
+            {"path": "admin.token", "strategy": "hash"},
+        ]
+        res, report = mask(data, rules=rules, learning_mode=True)
+        assert res is data
+        # Aseguramos que los valores originales siguen intactos
+        assert data["users"][0]["email"] == "a@b.com"
+        assert data["admin"]["token"] == "secret123"
+        assert report.total_fields_masked == 3
+        assert report.total_fields_checked > 0
+
+    def test_mask_scalar_with_report(self):
+        """Manejo de escalar con reporte."""
+        val, report = mask("just string", rules=[], generate_report=True)
+        assert val == "just string"
+        assert report.total_fields_masked == 0
+
+    def test_mask_list_of_primitives_copy(self):
+        """Recorrido y copia sobre listas con primitivos y sublistas."""
+        data = {
+            "tags": ["secret", "public"],
+            "matrix": [[1, 2], [3, 4]],
+        }
+        rules = [{"path": "tags[0]", "strategy": "redact"}]
+        res = mask(data, rules=rules)
+        assert res["tags"][0] == "****"
+        assert res["tags"][1] == "public"
+        assert res["matrix"] == [[1, 2], [3, 4]]
+        assert res is not data
+
+    def test_masker_add_rule_instance(self):
+        """Añade una instancia ya compilada de Rule."""
+        from jsonmask.rules import Rule
+        masker = Masker.from_rules([])
+        rule = Rule(path="custom_token", strategy="redact")
+        masker.add_rule(rule)
+        res = masker.mask({"custom_token": "secret"})
+        assert res["custom_token"] == "****"
+
 
 class TestMaskingReport:
     """Tests para MaskingReport."""
