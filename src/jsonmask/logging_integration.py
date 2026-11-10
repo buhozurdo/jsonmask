@@ -83,11 +83,28 @@ class MaskingFilter(logging.Filter):
         """Enmascara los datos extra del registro."""
         # Obtener el dict del record (sin atributos estándar)
         standard_attrs = {
-            "name", "msg", "args", "created", "filename", "funcName",
-            "levelname", "levelno", "lineno", "module", "msecs",
-            "pathname", "process", "processName", "relativeCreated",
-            "stack_info", "exc_info", "exc_text", "thread", "threadName",
-            "message", "asctime"
+            "name",
+            "msg",
+            "args",
+            "created",
+            "filename",
+            "funcName",
+            "levelname",
+            "levelno",
+            "lineno",
+            "module",
+            "msecs",
+            "pathname",
+            "process",
+            "processName",
+            "relativeCreated",
+            "stack_info",
+            "exc_info",
+            "exc_text",
+            "thread",
+            "threadName",
+            "message",
+            "asctime",
         }
 
         for key in dir(record):
@@ -260,7 +277,7 @@ def structlog_processor(masker: "Masker") -> Any:
         >>> import structlog
         >>> from jsonmask import Masker
         >>> from jsonmask.logging_integration import structlog_processor
-        >>> 
+        >>>
         >>> masker = Masker.from_rules([{"path": "user.email", "strategy": "redact"}])
         >>> structlog.configure(
         ...     processors=[
@@ -269,8 +286,10 @@ def structlog_processor(masker: "Masker") -> Any:
         ...     ]
         ... )
     """
+
     def processor(logger: Any, method_name: str, event_dict: dict) -> dict:
         return cast(dict, masker.mask(event_dict))
+
     return processor
 
 
@@ -281,12 +300,14 @@ def loguru_patcher(masker: "Masker") -> Any:
         >>> from loguru import logger
         >>> from jsonmask import Masker
         >>> from jsonmask.logging_integration import loguru_patcher
-        >>> 
+        >>>
         >>> masker = Masker.from_rules([{"path": "secret", "strategy": "redact"}])
         >>> logger = logger.patch(loguru_patcher(masker))
         >>> logger.info("Test", extra={"secret": "12345"})
     """
+
     def patcher(record: dict) -> None:
         if "extra" in record and record["extra"]:
             record["extra"] = masker.mask(record["extra"])
+
     return patcher
