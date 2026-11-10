@@ -3,7 +3,7 @@
 import json
 import math
 from collections import Counter
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List
 
 
 def deep_copy_structure(data: Any) -> Any:
@@ -112,9 +112,7 @@ def flatten_dict(
     return dict(items)
 
 
-def merge_rules(
-    *rule_lists: List[Dict[str, Any]]
-) -> List[Dict[str, Any]]:
+def merge_rules(*rule_lists: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     """Combina múltiples listas de reglas.
 
     Args:

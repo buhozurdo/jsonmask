@@ -140,9 +140,9 @@ class TestMasker:
 
     def test_masker_with_salt(self):
         """Masker con regla de hash salteada."""
-        masker = Masker.from_rules([
-            {"path": "user_id", "strategy": "hash", "salt": "production_salt_key"}
-        ])
+        masker = Masker.from_rules(
+            [{"path": "user_id", "strategy": "hash", "salt": "production_salt_key"}]
+        )
         result = masker.mask({"user_id": "usr_999"})
         assert result["user_id"] != "usr_999"
         # Determinista
@@ -150,9 +150,15 @@ class TestMasker:
 
     def test_masker_with_custom_callback(self):
         """Masker con función callback personalizada."""
-        masker = Masker.from_rules([
-            {"path": "price", "strategy": "custom", "func": lambda p: f"${p:,.2f} USD"}
-        ])
+        masker = Masker.from_rules(
+            [
+                {
+                    "path": "price",
+                    "strategy": "custom",
+                    "func": lambda p: f"${p:,.2f} USD",
+                }
+            ]
+        )
         result = masker.mask({"price": 1250})
         assert result["price"] == "$1,250.00 USD"
 
@@ -163,7 +169,10 @@ class TestMasker:
             {"nested": {"email": "two@example.com"}},
             "primitive_val",
         ]
-        rules = [{"path": "[*].email", "strategy": "redact"}, {"path": "[*].nested.email", "strategy": "redact"}]
+        rules = [
+            {"path": "[*].email", "strategy": "redact"},
+            {"path": "[*].nested.email", "strategy": "redact"},
+        ]
         res, report = mask(data, rules=rules, in_place=True, generate_report=True)
         assert res is data
         assert data[0]["email"] == "****"
@@ -214,6 +223,7 @@ class TestMasker:
     def test_masker_add_rule_instance(self):
         """Añade una instancia ya compilada de Rule."""
         from jsonmask.rules import Rule
+
         masker = Masker.from_rules([])
         rule = Rule(path="custom_token", strategy="redact")
         masker.add_rule(rule)

@@ -1,8 +1,6 @@
 """Tests para la CLI."""
 
 import json
-import tempfile
-from pathlib import Path
 
 import pytest
 from click.testing import CliRunner
@@ -45,7 +43,7 @@ rules:
         output_file = tmp_path / "output.json"
         result = runner.invoke(
             cli,
-            ["mask", "-i", json_file, "-r", rules_file, "-o", str(output_file), "-q"]
+            ["mask", "-i", json_file, "-r", rules_file, "-o", str(output_file), "-q"],
         )
 
         assert result.exit_code == 0
@@ -58,11 +56,7 @@ rules:
         """Enmascara desde stdin a stdout."""
         input_data = json.dumps({"password": "secret123", "user": "ana"})
 
-        result = runner.invoke(
-            cli,
-            ["mask", "-r", rules_file, "-q"],
-            input=input_data
-        )
+        result = runner.invoke(cli, ["mask", "-r", rules_file, "-q"], input=input_data)
 
         assert result.exit_code == 0
         output = json.loads(result.output.strip())
@@ -74,8 +68,16 @@ rules:
         report_file = tmp_path / "report.json"
         result = runner.invoke(
             cli,
-            ["mask", "-i", json_file, "-r", rules_file,
-             "--report", str(report_file), "-q"]
+            [
+                "mask",
+                "-i",
+                json_file,
+                "-r",
+                rules_file,
+                "--report",
+                str(report_file),
+                "-q",
+            ],
         )
 
         assert result.exit_code == 0
@@ -87,8 +89,7 @@ rules:
     def test_mask_rules_not_found(self, runner, json_file):
         """Error cuando archivo de reglas no existe."""
         result = runner.invoke(
-            cli,
-            ["mask", "-i", json_file, "-r", "/nonexistent/rules.yaml"]
+            cli, ["mask", "-i", json_file, "-r", "/nonexistent/rules.yaml"]
         )
 
         assert result.exit_code != 0

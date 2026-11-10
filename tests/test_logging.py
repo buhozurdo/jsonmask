@@ -4,8 +4,6 @@ import json
 import logging
 from io import StringIO
 
-import pytest
-
 from jsonmask import Masker, MaskingFilter, MaskingHandler
 from jsonmask.logging_integration import StructuredLogMasker
 
@@ -43,8 +41,13 @@ class TestMaskingFilter:
         filter = MaskingFilter(masker)
 
         record = logging.LogRecord(
-            name="test", level=logging.INFO, pathname="",
-            lineno=1, msg="test", args=(), exc_info=None
+            name="test",
+            level=logging.INFO,
+            pathname="",
+            lineno=1,
+            msg="test",
+            args=(),
+            exc_info=None,
         )
 
         assert filter.filter(record) is True
@@ -86,8 +89,13 @@ class TestMaskingHandler:
         handler = MaskingHandler(masker)
 
         record = logging.LogRecord(
-            name="test", level=logging.INFO, pathname="",
-            lineno=1, msg="test", args=(), exc_info=None
+            name="test",
+            level=logging.INFO,
+            pathname="",
+            lineno=1,
+            msg="test",
+            args=(),
+            exc_info=None,
         )
         record.request_data = {"token": "bearer_token_123"}
 
@@ -109,7 +117,7 @@ class TestStructuredLogMasker:
 
         entry = {
             "user": {"email": "test@example.com", "name": "Test"},
-            "action": "login"
+            "action": "login",
         }
 
         result = log_masker.mask_log_entry(entry)
@@ -167,7 +175,7 @@ class TestLoggingIntegration:
         stream = StringIO()
         handler = logging.StreamHandler(stream)
         handler.addFilter(MaskingFilter(masker))
-        handler.setFormatter(logging.Formatter('%(message)s'))
+        handler.setFormatter(logging.Formatter("%(message)s"))
 
         logger = logging.getLogger("test_integration")
         logger.setLevel(logging.INFO)

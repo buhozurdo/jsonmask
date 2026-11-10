@@ -1,14 +1,11 @@
 """Tests para el módulo de reglas."""
 
-import tempfile
-from pathlib import Path
-
 import pytest
 
 from jsonmask.rules import (
     Rule,
-    RuleValidationError,
     RulesParser,
+    RuleValidationError,
     compile_rules,
     validate_rules,
 )
@@ -30,7 +27,7 @@ class TestRule:
         rule = Rule(
             path="card.number",
             strategy="partial",
-            options={"keep_start": 4, "keep_end": 4}
+            options={"keep_start": 4, "keep_end": 4},
         )
 
         assert rule.options["keep_start"] == 4
@@ -56,11 +53,7 @@ class TestRule:
 
     def test_rule_to_dict(self):
         """Convierte regla a dict."""
-        rule = Rule(
-            path="email",
-            strategy="redact",
-            options={"replace_with": "***"}
-        )
+        rule = Rule(path="email", strategy="redact", options={"replace_with": "***"})
 
         result = rule.to_dict()
 
@@ -142,22 +135,22 @@ rules:
 
     def test_from_json(self):
         """Parsea JSON."""
-        json_content = '''
+        json_content = """
 {
     "rules": [
         {"path": "email", "strategy": "redact"}
     ]
 }
-'''
+"""
         rules = RulesParser.from_json(json_content)
 
         assert len(rules) == 1
 
     def test_from_json_list_format(self):
         """Parsea JSON como lista directa."""
-        json_content = '''[
+        json_content = """[
     {"path": "email", "strategy": "redact"}
-]'''
+]"""
         rules = RulesParser.from_json(json_content)
 
         assert len(rules) == 1
@@ -187,10 +180,12 @@ class TestCompileRules:
 
     def test_compile_from_dicts(self):
         """Compila desde lista de dicts."""
-        rules = compile_rules([
-            {"path": "a", "strategy": "redact"},
-            {"path": "b", "strategy": "hash"},
-        ])
+        rules = compile_rules(
+            [
+                {"path": "a", "strategy": "redact"},
+                {"path": "b", "strategy": "hash"},
+            ]
+        )
 
         assert len(rules) == 2
         assert all(isinstance(r, Rule) for r in rules)
@@ -259,5 +254,7 @@ class TestValidateRules:
 
     def test_rule_with_custom_strategy_dict(self):
         """Rule con strategy custom y opción func."""
-        rule = Rule(path="name", strategy="custom", options={"func": lambda v: v.upper()})
+        rule = Rule(
+            path="name", strategy="custom", options={"func": lambda v: v.upper()}
+        )
         assert rule.apply("ana") == "ANA"

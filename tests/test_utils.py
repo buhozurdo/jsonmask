@@ -1,7 +1,5 @@
 """Tests para el módulo utils."""
 
-import pytest
-
 from jsonmask.utils import (
     calculate_entropy,
     deep_copy_structure,
