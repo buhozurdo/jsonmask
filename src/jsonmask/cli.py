@@ -95,9 +95,7 @@ def _save_report(
     """Genera y guarda el reporte consolidado de enmascaramiento."""
     combined_report = {
         "total_objects": len(all_reports),
-        "total_fields_masked": sum(
-            r["total_fields_masked"] for r in all_reports
-        ),
+        "total_fields_masked": sum(r["total_fields_masked"] for r in all_reports),
         "objects": all_reports,
     }
     Path(report_file).write_text(
@@ -121,26 +119,30 @@ def cli() -> None:
 
 @cli.command()
 @click.option(
-    "--input", "-i",
+    "--input",
+    "-i",
     "input_file",
     type=click.Path(exists=True),
     help="Archivo JSON/NDJSON de entrada (stdin si se omite)",
 )
 @click.option(
-    "--rules", "-r",
+    "--rules",
+    "-r",
     "rules_file",
     type=click.Path(exists=True),
     required=True,
     help="Archivo de reglas YAML/JSON",
 )
 @click.option(
-    "--output", "-o",
+    "--output",
+    "-o",
     "output_file",
     type=click.Path(),
     help="Archivo de salida (stdout si se omite)",
 )
 @click.option(
-    "--ndjson", "-n",
+    "--ndjson",
+    "-n",
     is_flag=True,
     help="Tratar entrada/salida como NDJSON (newline-delimited JSON)",
 )
@@ -157,7 +159,8 @@ def cli() -> None:
     help="Generar reporte de campos enmascarados",
 )
 @click.option(
-    "--quiet", "-q",
+    "--quiet",
+    "-q",
     is_flag=True,
     help="Modo silencioso (sin mensajes de progreso)",
 )
@@ -189,10 +192,7 @@ def mask(
         masker = Masker(rules)
 
         if not quiet:
-            click.echo(
-                f"Cargadas {len(rules)} reglas desde {rules_file}",
-                err=True
-            )
+            click.echo(f"Cargadas {len(rules)} reglas desde {rules_file}", err=True)
 
         # Leer datos
         data = read_input(input_file, ndjson)
@@ -212,9 +212,11 @@ def mask(
             _save_report(report_file, all_reports, quiet)
 
         if not quiet:
-            total_masked = sum(
-                r["total_fields_masked"] for r in all_reports
-            ) if all_reports else "N/A"
+            total_masked = (
+                sum(r["total_fields_masked"] for r in all_reports)
+                if all_reports
+                else "N/A"
+            )
             click.echo(f"✓ Completado. Campos enmascarados: {total_masked}", err=True)
 
     except FileNotFoundError as e:
@@ -230,7 +232,8 @@ def mask(
 
 @cli.command()
 @click.option(
-    "--rules", "-r",
+    "--rules",
+    "-r",
     "rules_file",
     type=click.Path(exists=True),
     required=True,
