@@ -304,6 +304,47 @@ pytest
 pytest --cov=src --cov-report=term-missing
 ```
 
+CI runs the test suite on Python 3.9, 3.10, 3.11 and 3.12, and uploads
+coverage to Codecov from the 3.12 run.
+
+---
+
+## Development
+
+```bash
+pip install -e ".[dev]"
+```
+
+### Lint, format and type check
+
+```bash
+# Format code (Black + isort)
+black src/ tests/
+isort src/ tests/
+
+# Lint
+ruff check src/ tests/
+
+# Type check (mypy targets Python 3.10+; runtime still supports >= 3.8)
+mypy src/
+```
+
+The same checks run in CI on every push and pull request to `main`,
+together with the test matrix and a package build (`sdist` + `wheel`).
+
+### Pre-commit hooks
+
+```bash
+pre-commit install
+```
+
+This runs trailing-whitespace fixes, `ruff check --fix`, Black, isort
+and mypy on every commit. Run them manually with:
+
+```bash
+pre-commit run --all-files
+```
+
 ---
 
 ## Contributing
