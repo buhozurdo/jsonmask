@@ -38,7 +38,10 @@ jobs:
 
   test:
     name: Tests (Python ${{ matrix.python-version }})
-    runs-on: ubuntu-latest
+    # ubuntu-latest is now Ubuntu 26.04, which has no Python 3.9 build:
+    # setup-python fails with "Version 3.9 was not found". Pin 24.04
+    # so the 3.9 leg of the matrix (issue #2) can still run.
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
