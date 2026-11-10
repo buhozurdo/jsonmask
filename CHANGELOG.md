@@ -6,12 +6,17 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/en/1.0.
 y este proyecto adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
-## [0.3.1] - 2026-11-06
+## [0.3.1] - 2026-11-10
 
 ### Performance
 - **Single-Pass Tree Traversal**: Replaced redundant `copy.deepcopy()` and duplicate tree traversals with a unified, single-pass recursive copy traversal (`_traverse_copy`), yielding ~5x–11x speedups and dramatically lower memory allocation.
 - **AST & Path Matcher Memoization**: Added LRU cache for path syntax parsing and regex expansion in `PathMatcher._parse_and_expand_concrete_path`, plus instance-level match caching, accelerating exclusion and rule matching by up to ~52x.
 - **Salt Pre-compilation**: Pre-compiled base cryptographic hasher in `HashStrategy` via `hasher.copy()`, accelerating salted hashing throughput by >2.1x.
+
+### Security & CI
+- **Security Policy (`SECURITY.md`)**: Added vulnerability reporting guidelines via GitHub Private Security Advisories, contact emails, SLAs, and safe deployment recommendations (#12).
+- **Automated Dependencies (`.github/dependabot.yml`)**: Configured weekly Dependabot scans for Python packages and GitHub Actions (#9).
+- **Test Suite & Coverage Compliance**: Added `tests/test_utils.py` and `codecov.yml`, elevating test coverage to 87% with 130 passing unit tests.
 
 ---
 ## [0.3.0] - 2026-10-31
