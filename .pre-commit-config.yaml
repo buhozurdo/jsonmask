@@ -34,4 +34,7 @@ repos:
     hooks:
       - id: mypy
         args: [src/]
+        # Pre-commit would otherwise append changed filenames after
+        # src/, and mypy would see modules twice ("Duplicate module").
+        pass_filenames: false
         additional_dependencies: [types-PyYAML]
