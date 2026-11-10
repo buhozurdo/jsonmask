@@ -79,9 +79,7 @@ class Masker:
         self._rules = rules
 
     @classmethod
-    def from_rules(
-        cls, rules: Union[List[Dict[str, Any]], List[Rule]]
-    ) -> "Masker":
+    def from_rules(cls, rules: Union[List[Dict[str, Any]], List[Rule]]) -> "Masker":
         """Crea un Masker desde una lista de reglas.
 
         Args:
@@ -128,11 +126,12 @@ class Masker:
             data: Estructura de datos a enmascarar (dict/list).
             in_place: Si True, modifica el dict original.
             generate_report: Si True, retorna tupla (data, report).
-            learning_mode: Si True, opera en modo aprendizaje (dry-run): 
+            learning_mode: Si True, opera en modo aprendizaje (dry-run):
                            evalúa las reglas pero no altera los datos.
 
         Returns:
-            Datos enmascarados, o tupla (datos, reporte) si generate_report=True o learning_mode=True.
+            Datos enmascarados, o tupla (datos, reporte) si
+            generate_report=True o learning_mode=True.
 
         Example:
             >>> masker = Masker.from_rules([{"path": "secret", "strategy": "redact"}])
@@ -234,7 +233,7 @@ class Masker:
         self,
         node: Any,
         path_str: str,
-        report: MaskingReport,
+        report: Optional[MaskingReport],
     ) -> None:
         """Recorrido de solo lectura en modo learning (dry-run)."""
         if isinstance(node, dict):
@@ -289,7 +288,8 @@ def mask(
         learning_mode: Si True, no modifica los datos y evalúa como dry-run.
 
     Returns:
-        Datos enmascarados, o tupla (datos, reporte) si generate_report=True o learning_mode=True.
+        Datos enmascarados, o tupla (datos, reporte) si
+        generate_report=True o learning_mode=True.
 
     Example:
         >>> data = {"email": "test@example.com", "name": "Ana"}
@@ -303,8 +303,8 @@ def mask(
         masker = Masker.from_rules(rules)
 
     return masker.mask(
-        data, 
-        in_place=in_place, 
+        data,
+        in_place=in_place,
         generate_report=generate_report,
-        learning_mode=learning_mode
+        learning_mode=learning_mode,
     )
