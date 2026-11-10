@@ -61,7 +61,7 @@ jobs:
           pip install -e ".[dev,loggers]"
 
       - name: Run tests
-        run: python -m pytest --cov=src --cov-branch --cov-report=xml
+        run: python -m pytest --cov=src --cov-branch --cov-report=xml --junitxml=junit.xml
 
       - name: Upload coverage to Codecov
         if: matrix.python-version == '3.12'
@@ -75,6 +75,7 @@ jobs:
         uses: codecov/test-results-action@v1
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./junit.xml
 
   build:
     name: Build package
