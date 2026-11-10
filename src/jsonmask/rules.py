@@ -124,9 +124,7 @@ class RulesParser:
         strategy = rule_dict["strategy"]
 
         # Extraer opciones (todo lo que no sea path/strategy)
-        options = {
-            k: v for k, v in rule_dict.items() if k not in ("path", "strategy")
-        }
+        options = {k: v for k, v in rule_dict.items() if k not in ("path", "strategy")}
 
         return Rule(path=path, strategy=strategy, options=options)
 
@@ -230,9 +228,7 @@ class RulesParser:
                 return RulesParser.from_json(content)
 
 
-def compile_rules(
-    rules: Union[List[Dict[str, Any]], List[Rule]]
-) -> List[Rule]:
+def compile_rules(rules: Union[List[Dict[str, Any]], List[Rule]]) -> List[Rule]:
     """Compila reglas para uso eficiente.
 
     Args:
@@ -276,8 +272,6 @@ def validate_rules(rules: List[Dict[str, Any]]) -> List[str]:
         if "strategy" not in rule:
             errors.append(f"{rule_id}: falta campo 'strategy'")
         elif rule["strategy"] not in STRATEGY_REGISTRY:
-            errors.append(
-                f"{rule_id}: estrategia desconocida '{rule['strategy']}'"
-            )
+            errors.append(f"{rule_id}: estrategia desconocida '{rule['strategy']}'")
 
     return errors
