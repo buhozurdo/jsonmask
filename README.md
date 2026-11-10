@@ -6,6 +6,8 @@
 [![PyPI version](https://img.shields.io/pypi/v/buhozurdo-jsonmask.svg)](https://pypi.org/project/buhozurdo-jsonmask/)
 [![Python versions](https://img.shields.io/pypi/pyversions/buhozurdo-jsonmask.svg)](https://pypi.org/project/buhozurdo-jsonmask/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Security Policy](https://img.shields.io/badge/security-policy-brightgreen.svg)](SECURITY.md)
+[![Dependabot](https://img.shields.io/badge/dependabot-enabled-blue.svg?logo=dependabot)](.github/dependabot.yml)
 
 Deterministic masking and PII redaction for Python dictionaries, JSON payloads, and logs.
 
@@ -303,6 +305,23 @@ pytest
 # Run tests with coverage
 pytest --cov=src --cov-report=term-missing
 ```
+
+---
+
+## Security
+
+We take data protection and vulnerability management seriously. Because `jsonmask` handles sensitive data in flight, we ask that security concerns be reported responsibly.
+
+- **Vulnerability Reporting:** Submit private reports via [GitHub Security Advisories](https://github.com/buhozurdo/jsonmask/security/advisories/new) or email `security@buhozurdo.com`.
+- **Policy & Supported Versions:** See our full [SECURITY.md](SECURITY.md) for details on supported versions, response SLAs, and coordinated disclosure.
+
+---
+
+## Dependency Management
+
+Automated dependency updates are managed via **GitHub Dependabot** ([`.github/dependabot.yml`](.github/dependabot.yml)), which monitors and submits weekly pull requests for:
+- **Python dependencies:** Tracked from `pyproject.toml` (pip ecosystem).
+- **GitHub Actions:** CI/CD actions pinned to secure commit hashes with automated updates.
 
 ---
 
