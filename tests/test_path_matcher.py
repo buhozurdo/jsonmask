@@ -1,7 +1,5 @@
 """Tests para el módulo path_matcher."""
 
-import pytest
-
 from jsonmask.path_matcher import (
     PathMatcher,
     build_path,
@@ -207,7 +205,8 @@ class TestGetValueAtPath:
         assert found is False
 
     def test_path_matcher_cache_and_wildcard_mismatch(self):
-        """Prueba aciertos de caché, límite de caché y branch de índice no coincidente."""
+        """Prueba aciertos de caché, límite de caché y branch
+        de índice no coincidente."""
         matcher = PathMatcher("items[*].id")
         # Primer match (cache miss)
         assert matcher.matches("items[0].id") is True
