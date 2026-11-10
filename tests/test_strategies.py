@@ -1,7 +1,5 @@
 """Tests para las estrategias de enmascarado."""
 
-import pytest
-
 from jsonmask.strategies import (
     STRATEGY_REGISTRY,
     CustomStrategy,
@@ -12,7 +10,6 @@ from jsonmask.strategies import (
     RegexStrategy,
     ReplaceStrategy,
     get_strategy,
-    register_strategy,
 )
 
 
@@ -98,7 +95,8 @@ class TestHashStrategy:
         assert salted1 == salted2
 
     def test_hash_with_env_salt(self, monkeypatch):
-        """Hash utiliza la variable de entorno JSONMASK_SALT si no se pasa salt explícito."""
+        """Hash utiliza la variable de entorno JSONMASK_SALT
+        si no se pasa salt explícito."""
         strategy = HashStrategy()
         monkeypatch.setenv("JSONMASK_SALT", "env_secret_salt")
         env_salted = strategy.apply("user_123", {})
@@ -107,7 +105,8 @@ class TestHashStrategy:
         assert env_salted == explicit_salted
 
     def test_hash_salt_cache_and_limit(self):
-        """Verifica acierto de caché de salt y comportamiento con límite de 256 salts."""
+        """Verifica acierto de caché de salt y comportamiento
+        con límite de 256 salts."""
         strategy = HashStrategy()
         # Primer hash con salt (cache miss)
         res1 = strategy.apply("hello", {"salt": "fixed_salt"})
@@ -130,46 +129,33 @@ class TestPartialStrategy:
     def test_partial_keep_start_end(self):
         """Partial manteniendo inicio y fin."""
         strategy = PartialStrategy()
-        result = strategy.apply(
-            "4111111111111111",
-            {"keep_start": 4, "keep_end": 4}
-        )
+        result = strategy.apply("4111111111111111", {"keep_start": 4, "keep_end": 4})
         assert result == "4111********1111"
 
     def test_partial_only_keep_start(self):
         """Partial manteniendo solo inicio."""
         strategy = PartialStrategy()
-        result = strategy.apply(
-            "1234567890",
-            {"keep_start": 4, "keep_end": 0}
-        )
+        result = strategy.apply("1234567890", {"keep_start": 4, "keep_end": 0})
         assert result == "1234******"
 
     def test_partial_only_keep_end(self):
         """Partial manteniendo solo fin."""
         strategy = PartialStrategy()
-        result = strategy.apply(
-            "1234567890",
-            {"keep_start": 0, "keep_end": 4}
-        )
+        result = strategy.apply("1234567890", {"keep_start": 0, "keep_end": 4})
         assert result == "******7890"
 
     def test_partial_custom_mask_char(self):
         """Partial con carácter personalizado."""
         strategy = PartialStrategy()
         result = strategy.apply(
-            "12345678",
-            {"keep_start": 2, "keep_end": 2, "mask_char": "#"}
+            "12345678", {"keep_start": 2, "keep_end": 2, "mask_char": "#"}
         )
         assert result == "12####78"
 
     def test_partial_value_too_short(self):
         """Partial con valor más corto que keep_start + keep_end."""
         strategy = PartialStrategy()
-        result = strategy.apply(
-            "123",
-            {"keep_start": 4, "keep_end": 4}
-        )
+        result = strategy.apply("123", {"keep_start": 4, "keep_end": 4})
         assert result == "***"  # Todo enmascarado
 
 
@@ -181,7 +167,7 @@ class TestRegexStrategy:
         strategy = RegexStrategy()
         result = strategy.apply(
             "Bearer abc123token",
-            {"pattern": r"Bearer\s+(.+)", "replace_with": "Bearer ****"}
+            {"pattern": r"Bearer\s+(.+)", "replace_with": "Bearer ****"},
         )
         assert result == "Bearer ****"
 
@@ -190,7 +176,7 @@ class TestRegexStrategy:
         strategy = RegexStrategy()
         result = strategy.apply(
             "email: test@example.com here",
-            {"pattern": r"\S+@\S+", "replace_with": "****@****.***"}
+            {"pattern": r"\S+@\S+", "replace_with": "****@****.***"},
         )
         assert "****@****.***" in result
 
@@ -198,8 +184,7 @@ class TestRegexStrategy:
         """Regex inválido devuelve valor original."""
         strategy = RegexStrategy()
         result = strategy.apply(
-            "original",
-            {"pattern": "[invalid(regex", "replace_with": "nuevo"}
+            "original", {"pattern": "[invalid(regex", "replace_with": "nuevo"}
         )
         assert result == "original"
 
@@ -208,7 +193,7 @@ class TestRegexStrategy:
         strategy = RegexStrategy()
         result = strategy.apply(
             "no match here",
-            {"pattern": r"Bearer\s+(.+)", "replace_with": "Bearer ****"}
+            {"pattern": r"Bearer\s+(.+)", "replace_with": "Bearer ****"},
         )
         assert result == "no match here"
 
@@ -244,8 +229,7 @@ class TestEntropyStrategy:
         strategy = EntropyStrategy()
         high_entropy = "aB3xK9mPq2LfNwYz123"
         result = strategy.apply(
-            high_entropy,
-            {"entropy_min": 3.0, "replace_with": "[HIGH-ENTROPY]"}
+            high_entropy, {"entropy_min": 3.0, "replace_with": "[HIGH-ENTROPY]"}
         )
         assert result == "[HIGH-ENTROPY]"
 
@@ -256,7 +240,9 @@ class TestCustomStrategy:
     def test_custom_with_func(self):
         """Custom strategy con opción func."""
         strategy = CustomStrategy()
-        result = strategy.apply(1500, {"func": lambda v: "<HIGH>" if v > 1000 else str(v)})
+        result = strategy.apply(
+            1500, {"func": lambda v: "<HIGH>" if v > 1000 else str(v)}
+        )
         assert result == "<HIGH>"
 
     def test_custom_with_callback(self):
@@ -287,6 +273,14 @@ class TestStrategyRegistry:
 
     def test_all_strategies_registered(self):
         """Todas las estrategias están registradas."""
-        expected = ["redact", "replace", "hash", "partial", "regex", "entropy", "custom"]
+        expected = [
+            "redact",
+            "replace",
+            "hash",
+            "partial",
+            "regex",
+            "entropy",
+            "custom",
+        ]
         for name in expected:
             assert name in STRATEGY_REGISTRY
