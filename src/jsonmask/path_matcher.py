@@ -6,8 +6,8 @@ Este módulo permite hacer matching de paths en estructuras anidadas:
 - Índices: items[0].id
 """
 
-from functools import lru_cache
 import re
+from functools import lru_cache
 from typing import Any, Dict, Generator, List, Optional, Tuple, Union
 
 
@@ -25,7 +25,9 @@ class PathMatcher:
         """
         self.pattern = pattern
         self.segments = self._parse_pattern(pattern)
-        self._pattern_expanded: Tuple[str, ...] = tuple(self._expand_segments(self.segments))
+        self._pattern_expanded: Tuple[str, ...] = tuple(
+            self._expand_segments(self.segments)
+        )
         self._match_cache: Dict[str, bool] = {}
         self._compiled = True
 
@@ -119,9 +121,7 @@ class PathMatcher:
 
         return res
 
-    def _expand_segments(
-        self, segments: List[Tuple[str, Optional[str]]]
-    ) -> List[str]:
+    def _expand_segments(self, segments: List[Tuple[str, Optional[str]]]) -> List[str]:
         """Expande segmentos a una lista plana para comparación."""
         result = []
         for key, idx in segments:
@@ -241,9 +241,7 @@ def iter_paths(
                 yield build_path(current_keys), item, current_keys
 
 
-def set_value_at_path(
-    data: Any, keys: List[Union[str, int]], value: Any
-) -> None:
+def set_value_at_path(data: Any, keys: List[Union[str, int]], value: Any) -> None:
     """Establece un valor en un path específico.
 
     Args:
@@ -267,9 +265,7 @@ def set_value_at_path(
     current[keys[-1]] = value
 
 
-def get_value_at_path(
-    data: Any, keys: List[Union[str, int]]
-) -> Tuple[bool, Any]:
+def get_value_at_path(data: Any, keys: List[Union[str, int]]) -> Tuple[bool, Any]:
     """Obtiene un valor en un path específico.
 
     Args:
